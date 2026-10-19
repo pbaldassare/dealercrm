@@ -1,0 +1,486 @@
+<title>Etideal CRM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: barra laterale a pillole da 768px, barra in basso sul telefono; contenuto in card bianche su crema. Tema ripreso da ID Guard. */
+:root{
+  --bg:hsl(40 40% 94%);--fg:hsl(30 15% 13%);
+  --card:hsl(0 0% 100%);--card-fg:hsl(30 15% 13%);
+  --primary:hsl(190 75% 33%);--primary-fg:hsl(0 0% 100%);--primary-soft:hsl(190 75% 33% / .10);
+  --secondary:hsl(40 30% 89%);--muted:hsl(40 28% 91%);--muted-fg:hsl(35 10% 38%);
+  --accent:hsl(191 92% 26%);
+  --border:hsl(40 22% 85%);--input:hsl(40 22% 82%);
+  --success:hsl(142 76% 36%);--success-ink:hsl(142 76% 24%);
+  --warning:hsl(38 92% 50%);--warning-ink:hsl(38 92% 27%);
+  --danger:hsl(25 95% 53%);--danger-ink:hsl(25 95% 32%);
+  --destructive:hsl(4 72% 51%);--destructive-ink:hsl(4 72% 38%);
+  --info:hsl(221 83% 53%);--info-ink:hsl(221 83% 40%);
+  --radius:1rem;
+  --gradient-primary:linear-gradient(135deg,hsl(190 75% 33%) 0%,hsl(187 65% 42%) 100%);
+  --shadow-glow:0 12px 32px -12px hsl(190 75% 33% / .35);
+  --shadow-card:0 1px 2px hsl(30 20% 15% / .05),0 10px 28px -18px hsl(30 20% 15% / .16);
+  --font-sans:"Quicksand",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-display:"Baloo 2","Quicksand",ui-sans-serif,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:hsl(30 12% 9%);--fg:hsl(40 25% 92%);--card:hsl(30 10% 13%);--card-fg:hsl(40 25% 92%);
+  --primary:hsl(188 70% 45%);--primary-fg:hsl(30 15% 8%);--primary-soft:hsl(188 70% 45% / .14);
+  --secondary:hsl(30 8% 18%);--muted:hsl(30 8% 16%);--muted-fg:hsl(35 10% 65%);--accent:hsl(188 80% 55%);
+  --border:hsl(30 8% 22%);--input:hsl(30 8% 26%);
+  --success-ink:hsl(142 60% 60%);--warning-ink:hsl(38 90% 62%);--danger-ink:hsl(25 90% 64%);--destructive-ink:hsl(4 80% 68%);--info-ink:hsl(221 85% 72%);
+  --shadow-card:0 1px 2px hsl(0 0% 0% / .3),0 10px 28px -18px hsl(0 0% 0% / .5);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:hsl(30 12% 9%);--fg:hsl(40 25% 92%);--card:hsl(30 10% 13%);--card-fg:hsl(40 25% 92%);
+  --primary:hsl(188 70% 45%);--primary-fg:hsl(30 15% 8%);--primary-soft:hsl(188 70% 45% / .14);
+  --secondary:hsl(30 8% 18%);--muted:hsl(30 8% 16%);--muted-fg:hsl(35 10% 65%);--accent:hsl(188 80% 55%);
+  --border:hsl(30 8% 22%);--input:hsl(30 8% 26%);
+  --success-ink:hsl(142 60% 60%);--warning-ink:hsl(38 90% 62%);--danger-ink:hsl(25 90% 64%);--destructive-ink:hsl(4 80% 68%);--info-ink:hsl(221 85% 72%);
+  --shadow-card:0 1px 2px hsl(0 0% 0% / .3),0 10px 28px -18px hsl(0 0% 0% / .5);color-scheme:dark}
+
+*{box-sizing:border-box;border-color:var(--border)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-sans);font-weight:500;line-height:1.55;font-size:15px;-webkit-font-smoothing:antialiased;overflow-x:clip}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--card)}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:1.6rem;letter-spacing:-.015em}
+h2{font-size:1.2rem}
+h3{font-size:1.02rem}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+input,select{font:inherit;color:inherit}
+.app{display:flex;height:100%;overflow:hidden}
+aside{display:none;width:250px;flex-direction:column;border-right:1px solid var(--border);background:var(--card)}
+.brand{display:flex;gap:.75rem;align-items:center;padding:1.25rem;border-bottom:1px solid var(--border)}
+.brand .logo{width:42px;height:42px;border-radius:14px;background:var(--gradient-primary);display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-glow);flex:none}
+.brand b{display:block;font-family:var(--font-display);font-size:1.05rem;line-height:1.15}
+.brand small{color:var(--muted-fg);font-size:.78rem}
+.nav{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.25rem}
+.nav button{display:flex;gap:.75rem;align-items:center;width:100%;padding:.7rem 1rem;border-radius:999px;font-weight:600;font-size:.9rem;color:var(--muted-fg);transition:all .3s cubic-bezier(.4,0,.2,1)}
+.nav button:hover{background:var(--secondary);color:var(--fg)}
+.nav button.on{background:var(--primary);color:var(--primary-fg);box-shadow:var(--shadow-glow)}
+.nav svg,.tabbar svg{width:18px;height:18px;flex:none}
+.aside-foot{border-top:1px solid var(--border);padding:1rem;font-size:.82rem;color:var(--muted-fg)}
+.aside-foot select{width:100%;margin-top:.4rem;padding:.5rem .7rem;border:1px solid var(--input);border-radius:12px;background:var(--card)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:.75rem;padding:.7rem max(16px,env(safe-area-inset-right,0px)) .7rem max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--border);background:var(--card)}
+.topbar .logo{width:34px;height:34px;border-radius:11px;background:var(--gradient-primary);display:grid;place-items:center;color:#fff}
+.topbar h1{font-size:1.15rem;flex:1}
+.topbar .role{font-size:.72rem;color:var(--primary);background:var(--primary-soft);padding:.25rem .6rem;border-radius:999px;font-weight:700}
+main{flex:1;overflow-y:auto;padding-block:1.1rem 6rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:var(--card);border-top:1px solid var(--border);padding:.4rem max(8px,env(safe-area-inset-right,0px)) calc(.4rem + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));z-index:5}
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:.15rem;font-size:.66rem;font-weight:700;color:var(--muted-fg);padding:.35rem .5rem;border-radius:14px;min-width:52px}
+.tabbar button.on{color:var(--primary);background:var(--primary-soft)}
+@media(min-width:768px){aside{display:flex}.topbar,.tabbar{display:none}main{padding-block:1.6rem 2rem}}
+
+.card{background:var(--card);color:var(--card-fg);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);box-shadow:var(--shadow-card);padding:1rem 1.1rem}
+.card.pad0{padding:0;overflow:hidden}
+.head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.head p{margin:.15rem 0 0;color:var(--muted-fg);font-size:.9rem}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem}
+@media(min-width:640px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.kpi{padding:.9rem 1rem}
+.kpi .l{font-size:.74rem;color:var(--muted-fg);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-family:var(--font-display);font-size:1.5rem;font-weight:800;line-height:1.1;margin-top:.2rem;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:.78rem;color:var(--muted-fg);margin-top:.15rem}
+.list{display:flex;flex-direction:column}
+.row{display:flex;gap:.85rem;align-items:center;padding:.85rem 1.1rem;border-top:1px solid var(--border);width:100%;text-align:left}
+.row:first-child{border-top:0}
+.row:hover{background:var(--muted)}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t span{font-size:.82rem;color:var(--muted-fg)}
+.av{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-family:var(--font-display);font-weight:800;flex:none;background:var(--secondary);color:var(--fg)}
+.pill{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;white-space:nowrap}
+.p-ok{background:hsl(142 76% 36% / .12);color:var(--success-ink)}
+.p-warn{background:hsl(38 92% 50% / .14);color:var(--warning-ink)}
+.p-hot{background:hsl(25 95% 53% / .14);color:var(--danger-ink)}
+.p-bad{background:hsl(4 72% 51% / .12);color:var(--destructive-ink)}
+.p-info{background:hsl(221 83% 53% / .12);color:var(--info-ink)}
+.p-muted{background:var(--secondary);color:var(--muted-fg)}
+.p-primary{background:var(--primary-soft);color:var(--primary)}
+.timer{font-variant-numeric:tabular-nums;font-weight:800;font-family:var(--font-display);font-size:.95rem;min-width:62px;text-align:right}
+.timer.ok{color:var(--success-ink)}.timer.warn{color:var(--warning-ink)}.timer.late{color:var(--destructive-ink)}
+.timer small{display:block;font:600 .66rem var(--font-sans);color:var(--muted-fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.6rem 1.1rem;border-radius:999px;font-weight:700;font-size:.88rem;border:1px solid transparent;min-height:44px;transition:transform .2s,box-shadow .2s}
+.btn.primary{background:var(--primary);color:var(--primary-fg);box-shadow:var(--shadow-glow)}
+.btn.outline{border-color:var(--input);background:var(--card)}
+.btn.ghost{color:var(--primary)}
+.btn:active{transform:scale(.97)}
+.btn.sm{min-height:36px;padding:.4rem .85rem;font-size:.8rem}
+.btns{display:flex;gap:.5rem;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:.6rem;background:var(--card);border:1px solid var(--input);border-radius:999px;padding:.35rem .5rem .35rem 1rem}
+.search input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:1rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.search input::placeholder{text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted-fg)}
+.chips{display:flex;gap:.4rem;overflow-x:auto;padding-bottom:.2rem;scrollbar-width:none}
+.chips button{flex:none;padding:.35rem .8rem;border-radius:999px;border:1px solid var(--input);font-size:.8rem;font-weight:600;background:var(--card)}
+.chips button.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.grid2{display:grid;gap:1rem;grid-template-columns:1fr}
+@media(min-width:900px){.grid2{grid-template-columns:1fr 1fr}}
+.kv{display:grid;grid-template-columns:1fr auto;gap:.35rem .75rem;font-size:.9rem}
+.kv dt{color:var(--muted-fg);margin:0}.kv dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.bar{height:9px;border-radius:999px;background:var(--muted);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px;background:var(--gradient-primary)}
+.tl{list-style:none;margin:0;padding:0 0 0 1.1rem;border-left:2px solid var(--border);display:flex;flex-direction:column;gap:.7rem}
+.tl li{position:relative;font-size:.88rem}
+.tl li::before{content:"";position:absolute;left:calc(-1.1rem - 6px);top:.45rem;width:10px;height:10px;border-radius:50%;background:var(--primary);border:2px solid var(--card)}
+.tl li span{display:block;color:var(--muted-fg);font-size:.76rem}
+.margin{display:flex;flex-direction:column;gap:.45rem}
+.mrow{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;font-size:.9rem}
+.mrow .bar{grid-column:1/-1}
+.mrow .amt{font-weight:700;font-variant-numeric:tabular-nums}
+.mrow .amt.neg{color:var(--destructive-ink)}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding-top:.7rem;margin-top:.3rem;border-top:1px dashed var(--border)}
+.total b{font-family:var(--font-display);font-size:1.5rem;font-weight:800;color:var(--primary)}
+.yard{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:.45rem}
+.slot{aspect-ratio:1;border-radius:14px;border:1.5px dashed var(--input);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.66rem;font-weight:700;color:var(--muted-fg);padding:.2rem;text-align:center}
+.slot.busy{border:0;background:var(--primary-soft);color:var(--primary)}
+.slot.busy b{font-size:.62rem;letter-spacing:.03em;line-height:1.1}
+.slot.sel{outline:3px solid var(--primary);outline-offset:2px}
+.slot.shop{background:hsl(38 92% 50% / .14);border:0;color:var(--warning-ink)}
+.sw{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.75rem 0;border-top:1px solid var(--border)}
+.sw:first-child{border-top:0}
+.sw span{display:block;font-size:.8rem;color:var(--muted-fg)}
+.toggle{width:48px;height:28px;border-radius:999px;background:var(--input);position:relative;flex:none;transition:background .25s}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.toggle.on{background:var(--primary)}.toggle.on::after{transform:translateX(20px)}
+.num{display:flex;align-items:center;gap:.4rem}
+.num input{width:64px;padding:.35rem .5rem;border:1px solid var(--input);border-radius:10px;background:var(--card);text-align:right;font-variant-numeric:tabular-nums}
+.back{display:inline-flex;align-items:center;gap:.3rem;color:var(--primary);font-weight:700;font-size:.88rem;padding:.2rem 0}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:.45rem}
+.photo{aspect-ratio:4/3;border-radius:12px;background:var(--secondary);display:grid;place-items:center;color:var(--muted-fg);font-size:.68rem;font-weight:600;text-align:center;padding:.3rem}
+.photo.add{border:1.5px dashed var(--input);background:none;color:var(--primary)}
+.dmg{display:flex;gap:.5rem;align-items:center;font-size:.86rem;padding:.4rem 0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(5.2rem + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:.6rem 1rem;border-radius:999px;font-size:.85rem;font-weight:600;box-shadow:var(--shadow-card);z-index:20;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+@media(min-width:768px){.toast{bottom:1.5rem}}
+.ai-box{background:var(--primary-soft);border-radius:14px;padding:.8rem 1rem;font-size:.88rem}
+.ai-box b{color:var(--primary)}
+.demo{font-size:.72rem;color:var(--muted-fg);text-align:center}
+.fade{animation:fade .45s cubic-bezier(.16,1,.3,1) both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.fade{animation:none}*{transition:none!important}}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+</style>
+<style>
+.state{display:flex;flex-direction:column;align-items:center;gap:.8rem;padding:3rem 1rem;text-align:center;color:var(--muted-fg)}
+.state h2{color:var(--fg)}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--primary);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.live{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:700;color:var(--success-ink)}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--success)}
+.busy-ov{position:fixed;inset:0;background:hsl(0 0% 0% / .08);z-index:15;display:none}
+.busy-ov.on{display:block}
+.err{background:hsl(4 72% 51% / .1);color:var(--destructive-ink);border-radius:14px;padding:.8rem 1rem;font-size:.88rem}
+</style>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.5-5.5a2 2 0 0 0-1.9-1.5H8.4a2 2 0 0 0-1.9 1.5Z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/><path d="M3 12h2M19 12h2"/></svg></div><div><b>Etideal CRM</b><small>Concessionario demo</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="aside-foot"><span id="liveD"></span>Ruolo attivo<select id="roleD"></select></div>
+  </aside>
+  <div class="main">
+    <div class="topbar"><div class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.5-5.5a2 2 0 0 0-1.9-1.5H8.4a2 2 0 0 0-1.9 1.5Z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg></div><h1 id="topTitle">Oggi</h1><select id="roleM" class="role" aria-label="Ruolo"></select></div>
+    <main><div class="wrap" id="view"><div class="state"><div class="spin"></div><h2>Collegamento a Supabase</h2><p>Carico i dati del concessionario dal progetto etidealcrm.</p></div></div></main>
+    <div class="tabbar" id="tabbar"></div>
+  </div>
+</div>
+<div class="busy-ov" id="busy"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Collegamento a Supabase tramite il connettore del visualizzatore ----------
+const PROJECT = "moyfkdwsghidkcifesrg";
+const LOAD_SQL = `select json_build_object( 'now', now(), 'dealership', (select row_to_json(x) from (select id,name,lat,lng from etidealcrm.dealership limit 1) x), 'slots_geo', (select count(*) from etidealcrm.yard_slot where lat is not null), 'sellers', (select json_agg(json_build_object('id',p.id,'name',p.full_name,'role',p.role,'available',p.is_available,'active',p.is_active,'bands',p.enabled_bands, 'rate',coalesce(s.close_rate_90,0),'resp',s.avg_response_minutes,'open',(select count(*) from etidealcrm.lead ol where ol.assigned_to=p.id and ol.status not in ('won','lost','invalid')),'recv30',coalesce(s.leads_received_30,0)) order by p.role,p.full_name) from etidealcrm.profile p left join etidealcrm.salesperson_stats s on s.salesperson_id=p.id), 'vehicles', (select json_agg(json_build_object('id',v.id,'plate',v.plate,'name',concat_ws(' ',v.make,v.model,v.trim),'year',extract(year from v.first_registration), 'km',v.mileage_km,'cost',v.purchase_cost,'price',coalesce(v.sale_price,v.list_price),'st',v.status,'sup',su.name,'days',(current_date - v.entry_date), 'slot',coalesce(ys.code,'—'),'yard',v.yard_status,'verified',v.yard_verified_at,'fuel',v.fuel_type,'color',v.color,'body',v.body_type, 'recond',(select coalesce(sum(w.cost),0) from etidealcrm.vehicle_work w where w.vehicle_id=v.id), 'events',(select json_agg(json_build_object('at',e.at,'type',e.type,'to',e.to_status,'payload',e.payload) order by e.at) from etidealcrm.vehicle_event e where e.vehicle_id=v.id), 'listings',(select json_agg(json_build_object('portal',l.portal,'st',l.status)) from etidealcrm.listing l where l.vehicle_id=v.id), 'conds',(select json_agg(json_build_object('phase',c.phase,'fuel',c.fuel_level,'km',c.mileage_km,'at',c.taken_at, 'dmg',(select json_agg(json_build_object('zone',d.zone,'type',d.damage_type,'sev',d.severity,'rep',d.repaired)) from etidealcrm.vehicle_damage d where d.condition_id=c.id)) order by c.taken_at) from etidealcrm.vehicle_condition c where c.vehicle_id=v.id), 'photos',(select count(*) from etidealcrm.vehicle_photo ph where ph.vehicle_id=v.id)) order by v.plate) from etidealcrm.vehicle v left join etidealcrm.supplier su on su.id=v.supplier_id left join etidealcrm.yard_slot ys on ys.id=v.yard_slot_id), 'leads', (select json_agg(json_build_object('id',l.id,'ref',l.source_ref,'cust',concat_ws(' ',c.first_name,c.last_name),'phone',c.phone,'ch',l.channel, 'vehicle_id',l.vehicle_id,'band',l.price_band,'temp',l.temperature,'score',l.ai_score,'st',l.status,'to',l.assigned_to,'since',l.status_changed_at,'deadline',l.status_deadline_at, 'msg',l.interest_text,'ai',l.ai_summary,'lost',l.lost_reason,'deal_id',l.deal_id, 'appt',(select a.starts_at from etidealcrm.appointment a where a.lead_id=l.id and a.status in ('scheduled','confirmed') order by a.starts_at limit 1), 'events',(select json_agg(json_build_object('at',e.at,'kind',e.actor_kind,'type',e.type,'to',e.to_status) order by e.at) from etidealcrm.lead_event e where e.lead_id=l.id), 'conv',(select json_agg(json_build_object('at',x.at,'dir',x.direction,'ai',x.is_ai,'body',x.body) order by x.at) from etidealcrm.conversation x where x.lead_id=l.id)) order by l.status_deadline_at nulls last) from etidealcrm.lead l left join etidealcrm.customer c on c.id=l.customer_id where l.source_ref is not null and (l.status not in ('won','lost','invalid') or l.status_changed_at > now() - interval '2 days')), 'lead_counts', (select json_object_agg(status, n) from (select status, count(*) n from etidealcrm.lead group by 1) q), 'deals', (select json_agg(json_build_object('id',d.id,'lead_id',d.lead_id,'vehicle_id',d.vehicle_id,'seller',d.salesperson_id,'st',d.status,'price',d.sale_price,'deposit',d.deposit, 'fin',d.financing,'trade',d.trade_in,'signed',d.signed_at, 'items',(select json_agg(json_build_object('type',i.type,'kind',i.kind,'est',i.estimated,'act',i.actual,'status',i.status,'source',i.source) order by i.created_at) from etidealcrm.deal_item i where i.deal_id=d.id))) from etidealcrm.deal d), 'zones', (select json_agg(json_build_object('code',z.code,'name',z.name,'slots',(select json_agg(json_build_object('id',s.id,'code',s.code) order by s.code) from etidealcrm.yard_slot s where s.zone_id=z.id)) order by z.code) from etidealcrm.yard_zone z), 'settings', (select json_object_agg(key,value) from etidealcrm.setting), 'invoices', (select json_agg(json_build_object('id',i.id,'deal_id',i.deal_id,'kind',i.kind,'st',i.status,'fic_id',i.fic_document_id,'number',i.number,'numeration',i.numeration,'date',i.date,'gross',i.amount_gross,'dry',i.dry_run,'err',i.last_error,'url',i.fic_url,'at',i.created_at,'payload',i.payload) order by i.created_at desc) from etidealcrm.invoice i), 'fic', (select row_to_json(s) from etidealcrm.fic_connection_status s limit 1), 'outbox', (select json_agg(json_build_object('integration',o.integration,'action',o.action,'st',o.status,'at',o.created_at) order by o.created_at desc) from (select * from etidealcrm.outbox order by created_at desc limit 10) o) ) as data;`;
+let mcp = null, D = null, loadedAt = null;
+
+function parsePayload(p){
+  // execute_sql risponde con {result: "...<untrusted-data-x>[json]</untrusted-data-x>"}
+  let txt = typeof p === "string" ? p : (p && typeof p.result === "string" ? p.result : null);
+  if (txt == null) { if (Array.isArray(p)) return p; throw new Error("risposta non riconosciuta"); }
+  const m = txt.match(/<untrusted-data-[\w-]+>\s*(\[[\s\S]*\])\s*<\/untrusted-data/);
+  if (m) return JSON.parse(m[1]);
+  const t = txt.trim(); if (t.startsWith("[")||t.startsWith("{")) return JSON.parse(t);
+  return [];
+}
+async function sql(query, opts){
+  const r = await mcp.callTool("Supabase", "execute_sql", { project_id: PROJECT, query }, opts || { cache: false });
+  return parsePayload(r.payload);
+}
+const q = s => String(s).replace(/'/g, "''");
+
+async function load(){
+  const rows = await sql(LOAD_SQL);
+  D = rows[0].data;
+  D.vehicles = D.vehicles || []; D.leads = D.leads || []; D.sellers = D.sellers || []; D.deals = D.deals || []; D.zones = D.zones || []; D.settings = D.settings || {};
+  D.byV = Object.fromEntries(D.vehicles.map(v => [v.id, v]));
+  D.byS = Object.fromEntries(D.sellers.map(s => [s.id, s]));
+  loadedAt = new Date();
+  render();
+}
+async function write(label, query){
+  const ov = document.getElementById("busy"); ov.classList.add("on");
+  try { await sql(query); await load(); toast(label); }
+  catch (e) { showError(e); }
+  finally { ov.classList.remove("on"); }
+}
+function showError(e){
+  const code = e && e.code; let msg;
+  if (code === "server_not_connected") msg = "Collega il connettore Supabase in claude.ai (Impostazioni → Connettori).";
+  else if (code === "needs_reauth") msg = "Il connettore Supabase va ricollegato in claude.ai.";
+  else if (code === "not_in_manifest" || code === "approval_required") msg = "Serve il permesso per usare Supabase da questa pagina.";
+  else if (code === "tool_error") msg = "Supabase ha rifiutato l'operazione: " + (e.message||"").slice(0,200);
+  else msg = (e && e.message) || "Errore sconosciuto";
+  toast(msg);
+  const v = document.getElementById("view");
+  if (!D) v.innerHTML = `<div class="state"><h2>Non riesco a leggere i dati</h2><div class="err">${esc(msg)}</div><button class="btn primary" onclick="boot()">Riprova</button></div>`;
+}
+async function boot(){
+  try {
+    mcp = await (window.claude && window.claude.use ? window.claude.use("mcp") : Promise.resolve(null));
+    if (!mcp) {
+      document.getElementById("view").innerHTML = `<div class="state"><h2>Serve claude.ai</h2><p>Questa pagina legge i dati dal tuo progetto Supabase tramite il connettore di claude.ai. Aprila da claude.ai con il connettore Supabase attivo.</p></div>`;
+      return;
+    }
+    await load();
+  } catch (e) { showError(e); }
+}
+
+// ---------- Etichette ----------
+const ROLES = {sales_manager:"Responsabile vendite",salesperson:"Venditore (Marco)",used_manager:"Resp. usato",yard:"Piazzale",admin:"Amministratore"};
+const LST = {new:"Nuova",ai_qualifying:"IA in corso",qualified:"Qualificata",assigned:"Assegnata",contacted:"Contattata",appointment_set:"Appuntamento",visited:"Visita fatta",proposal_sent:"Proposta inviata",negotiating:"In trattativa",won:"Vinta",lost:"Persa",invalid:"Non valida"};
+const NEXT = {new:["ai_qualifying","invalid"],ai_qualifying:["qualified","invalid"],qualified:["assigned"],assigned:["contacted"],contacted:["appointment_set","lost"],appointment_set:["visited","contacted","lost"],visited:["proposal_sent","lost"],proposal_sent:["negotiating","lost"],negotiating:["won","lost"],won:[],lost:[],invalid:[]};
+const LOST = {price_too_high:"Prezzo troppo alto",vehicle_sold:"Auto venduta",chose_competitor:"Scelto concorrente",no_response:"Nessuna risposta",financing_denied:"Finanziamento negato",trade_in_not_accepted:"Permuta non accettata",changed_mind:"Ha cambiato idea",other:"Altro"};
+const VST = {incoming:["In arrivo","p-muted"],received:["Ricevuta","p-info"],reconditioning:["In lavorazione","p-warn"],ready:["Pronta","p-info"],published:["Pubblicata","p-ok"],reserved:["Riservata","p-hot"],sold:["Venduta","p-primary"],delivering:["In consegna","p-info"],delivered:["Consegnata","p-muted"],withdrawn:["Ritirata","p-muted"]};
+const DST = {open:"Aperta",quote_sent:"Preventivo inviato",contract_pending:"Contratto in attesa",signed:"Firmata",payment_pending:"Pagamento in attesa",transfer_documents:"Passaggio in corso",delivered:"Consegnata",closed:"Chiusa",cancelled:"Annullata"};
+const CH = {autoscout24:"AutoScout24",other_portal:"Altro portale",website:"Sito",whatsapp:"WhatsApp",voicemail:"Voicemail",phone:"Telefono",facebook:"Facebook",instagram:"Instagram",walk_in:"In sede"};
+const ITEM = {vehicle_margin:"Margine veicolo",financing_interest:"Interessi finanziamento",insurance:"Assicurazione",cvt:"CVT",gps:"Satellitare",etching:"Marchiatura",extended_warranty:"Garanzia estesa",fees:"Spese",discount:"Sconto",salesperson_commission:"Provvigione venditore",other_cost:"Altro costo"};
+const FUEL = {empty:"vuoto",quarter:"1/4",half:"1/2",three_quarters:"3/4",full:"pieno"};
+const DMG = {scratch:"Graffio",dent:"Ammaccatura",break:"Rottura",wear:"Usura"};
+const SEV = {light:"lieve",medium:"media",severe:"grave"};
+const W = {petrol:"Benzina",diesel:"Diesel",hybrid:"Ibrida",electric:"Elettrica",lpg:"GPL",methane:"Metano",sedan:"Berlina",suv:"SUV",city_car:"City car",station_wagon:"Station wagon",minivan:"Monovolume",coupe:"Coupé",blue:"Blu",black:"Nero",white:"Bianco",red:"Rosso",grey:"Grigio",silver:"Argento",in_yard:"In piazzale",workshop:"In officina",test_drive:"In prova",off_site:"Fuori sede",rear_bumper:"Paraurti posteriore",front_bumper:"Paraurti anteriore",front_left_door:"Portiera ant. sx",front_right_door:"Portiera ant. dx",rear_left_door:"Portiera post. sx",rear_right_door:"Portiera post. dx",hood:"Cofano",roof:"Tetto",trunk:"Bagagliaio",published:"Pubblicato",suspended:"Sospeso",withdrawn:"Ritirato",to_publish:"Da pubblicare",publishing:"In pubblicazione",error:"Errore"};
+const lbl = k => k==null ? "—" : (W[k] || String(k).replace(/_/g," ").replace(/^\w/,c=>c.toUpperCase()));
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => Number(n||0).toLocaleString("it-IT",{maximumFractionDigits:0})+" €";
+const fdt = s => s ? new Date(s).toLocaleString("it-IT",{dateStyle:"short",timeStyle:"short"}) : "—";
+const fd = s => s ? new Date(s).toLocaleDateString("it-IT",{day:"numeric",month:"short"}) : "—";
+const ic = {
+  oggi:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  lead:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  auto:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.5-5.5a2 2 0 0 0-1.9-1.5H8.4a2 2 0 0 0-1.9 1.5Z"/><circle cx="7.5" cy="17" r="1.5"/><circle cx="16.5" cy="17" r="1.5"/></svg>',
+  pratica:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
+  piazzale:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>',
+  parametri:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>',
+};
+const SCREENS = [["oggi","Oggi"],["lead","Lead"],["auto","Auto"],["pratica","Pratica"],["piazzale","Piazzale"],["parametri","Parametri"]];
+let S = {screen:"oggi",role:"sales_manager",lead:null,veh:null,q:"",filter:"open",slot:null,lostFor:null};
+
+function toast(t){const e=document.getElementById("toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),2600)}
+function go(screen,extra){S.screen=screen;Object.assign(S,{lead:null,veh:null,lostFor:null},extra||{});render();document.querySelector("main").scrollTo({top:0})}
+
+// ---------- Helper ----------
+const marco = () => D.sellers.find(s=>s.name==="Marco Rinaldi");
+const myLeads = () => S.role==="salesperson" ? D.leads.filter(l=>l.to===(marco()||{}).id) : D.leads;
+const isOpen = l => !["won","lost","invalid"].includes(l.st);
+const sellerName = id => (D.byS[id]||{}).name || "non assegnata";
+function timerFor(l){
+  if(!l.deadline) return "";
+  const left = new Date(l.deadline)-Date.now(), total = new Date(l.deadline)-new Date(l.since), pct = total>0?left/total:1;
+  const cls = left<0?"late":pct<.25?"warn":"ok";
+  const abs=Math.abs(left), txt = abs<3600000?Math.round(abs/60000)+" min":abs<86400000?Math.round(abs/3600000)+" h":Math.round(abs/86400000)+" g";
+  return `<div class="timer ${cls}">${left<0?"−":""}${txt}<small>${left<0?"scaduto":"residuo"}</small></div>`;
+}
+const tempPill = t => t==="hot"?'<span class="pill p-hot">Calda</span>':t==="warm"?'<span class="pill p-warn">Tiepida</span>':t==="cold"?'<span class="pill p-info">Fredda</span>':'<span class="pill p-muted">Da valutare</span>';
+const stPill = st => `<span class="pill ${st==="won"?"p-ok":["lost","invalid"].includes(st)?"p-bad":["ai_qualifying","new"].includes(st)?"p-muted":"p-primary"}">${LST[st]||st}</span>`;
+const vPill = st => `<span class="pill ${(VST[st]||["",""])[1]}">${(VST[st]||[st])[0]}</span>`;
+const vName = l => (D.byV[l.vehicle_id]||{}).name || (l.msg||"").slice(0,40) || "Veicolo non indicato";
+function leadRow(l){
+  return `<button class="row" onclick="go('lead',{lead:'${l.id}'})"><div class="av" style="background:var(--primary-soft);color:var(--primary)">${esc(l.band||"?")}</div><div class="t"><b>${esc(l.cust||"Cliente")} · ${esc(vName(l))}</b><span>${l.ref?esc(l.ref)+" · ":""}${CH[l.ch]||lbl(l.ch)} · ${esc(sellerName(l.to))} · ${LST[l.st]||l.st}</span></div>${timerFor(l)}</button>`;
+}
+const dealMargin = d => (d.items||[]).reduce((a,i)=>a+(i.kind==="revenue"?1:-1)*Number(i.act??i.est??0),0);
+
+// ---------- Schermate ----------
+function vOggi(){
+  const ls = myLeads().filter(isOpen).sort((a,b)=>new Date(a.deadline||8.64e15)-new Date(b.deadline||8.64e15));
+  const late = ls.filter(l=>l.deadline&&new Date(l.deadline)<Date.now());
+  const appts = D.leads.filter(l=>l.appt).sort((a,b)=>new Date(a.appt)-new Date(b.appt));
+  const deal = D.deals[0];
+  const hist = D.lead_counts || {};
+  return `<div class="head"><div><h1>Oggi</h1><p>${new Date().toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ${ROLES[S.role]}</p></div><button class="btn ghost sm" onclick="load().then(()=>toast('Aggiornato'))">↻ Aggiorna</button></div>
+  <div class="kpis">
+    <div class="card kpi"><div class="l">Lead aperte</div><div class="v">${ls.length}</div><div class="s">${late.length} oltre il timer</div></div>
+    <div class="card kpi"><div class="l">Appuntamenti</div><div class="v">${appts.length}</div><div class="s">${appts[0]?fdt(appts[0].appt):"nessuno"}</div></div>
+    <div class="card kpi"><div class="l">Auto in stock</div><div class="v">${D.vehicles.filter(v=>!["sold","delivered","withdrawn"].includes(v.st)).length}</div><div class="s">${D.vehicles.filter(v=>v.days>60&&v.st==="published").length} ferme oltre 60 gg</div></div>
+    <div class="card kpi"><div class="l">Margine stimato</div><div class="v">${deal?fmt(dealMargin(deal)):"—"}</div><div class="s">${deal?"pratica "+DST[deal.st]:"nessuna pratica"}</div></div>
+  </div>
+  ${late.length?`<div class="card" style="border-color:hsl(4 72% 51% / .4)"><div class="head"><div><h3>Attenzione</h3><p>${late.length===1?"Una lead ha":late.length+" lead hanno"} superato il timer dello stato. La prima: ${esc(late[0].cust||"")} · ${esc(vName(late[0]))}.</p></div><button class="btn sm outline" onclick="go('lead',{lead:'${late[0].id}'})">Apri</button></div></div>`:""}
+  <div class="card pad0"><div class="head" style="padding:1rem 1.1rem .5rem"><h2>Lead per tempo residuo</h2><button class="btn ghost sm" onclick="go('lead')">Tutte</button></div><div class="list">${ls.slice(0,8).map(leadRow).join("")||'<div class="row">Nessuna lead aperta</div>'}</div></div>
+  <div class="card pad0"><div class="head" style="padding:1rem 1.1rem .5rem"><h2>Appuntamenti</h2></div><div class="list">${appts.map(l=>`<button class="row" onclick="go('lead',{lead:'${l.id}'})"><div class="av" style="font-size:.78rem">${new Date(l.appt).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</div><div class="t"><b>${esc(l.cust)} · ${esc(vName(l))}</b><span>${fdt(l.appt)} · ${esc(sellerName(l.to))}</span></div>${stPill(l.st)}</button>`).join("")||'<div class="row">Nessun appuntamento</div>'}</div></div>
+  <p class="demo">Storico: ${hist.won||0} vinte · ${hist.lost||0} perse · dati dal progetto Supabase, aggiornati ${loadedAt?loadedAt.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}):""}</p>`;
+}
+function vLead(){
+  if(S.lead){const l=D.leads.find(x=>x.id===S.lead);return l?vLeadDetail(l):vLeadMissing();}
+  const f=S.filter;
+  const ls = myLeads().filter(l=>f==="all"||(f==="open"&&isOpen(l))||l.temp===f||l.st===f).sort((a,b)=>new Date(a.deadline||8.64e15)-new Date(b.deadline||8.64e15));
+  return `<div class="head"><div><h1>Lead</h1><p>${ls.length} lead · ${S.role==="salesperson"?"solo le tue":"tutte"}</p></div><button class="btn primary sm" onclick="newLead()">+ Nuova</button></div>
+  <div class="chips">${[["open","Aperte"],["hot","Calde"],["warm","Tiepide"],["ai_qualifying","IA in corso"],["negotiating","In trattativa"],["all","Tutte"]].map(([k,n])=>`<button class="${f===k?"on":""}" onclick="S.filter='${k}';render()">${n}</button>`).join("")}</div>
+  <div class="card pad0"><div class="list">${ls.map(leadRow).join("")||'<div class="row">Nessuna lead con questo filtro</div>'}</div></div>`;
+}
+const vLeadMissing = () => `<button class="back" onclick="go('lead')">‹ Lead</button><div class="card"><p>Questa lead non è più tra quelle aperte. Aggiorna l'elenco.</p></div>`;
+function vLeadDetail(l){
+  const v=D.byV[l.vehicle_id];
+  const canReassign = ["sales_manager","admin"].includes(S.role) && isOpen(l);
+  const next = NEXT[l.st]||[];
+  return `<button class="back" onclick="go('lead')">‹ Lead</button>
+  <div class="head"><div><h1>${esc(l.cust||"Cliente")}</h1><p>${l.ref?esc(l.ref)+" · ":""}${CH[l.ch]||lbl(l.ch)} · fascia ${esc(l.band||"—")}</p></div><div class="btns">${tempPill(l.temp)}${stPill(l.st)}</div></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="head"><h3>Stato e timer</h3>${timerFor(l)}</div>
+      <dl class="kv" style="margin-top:.6rem"><dt>Venditore</dt><dd>${esc(sellerName(l.to))}</dd><dt>Punteggio IA</dt><dd>${l.score??"—"}/100</dd><dt>Auto</dt><dd>${v?`<a href="#" onclick="event.preventDefault();go('auto',{veh:'${v.id}'})" style="color:var(--primary)">${esc(v.plate)}</a>`:"—"}</dd><dt>Telefono</dt><dd>${esc(l.phone||"—")}</dd><dt>Nello stato dal</dt><dd>${fdt(l.since)}</dd>${l.appt?`<dt>Appuntamento</dt><dd>${fdt(l.appt)}</dd>`:""}${l.lost?`<dt>Motivo perdita</dt><dd>${LOST[l.lost]||l.lost}</dd>`:""}</dl>
+      <div class="btns" style="margin-top:1rem"><button class="btn primary" onclick="toast('Chiamata: ${esc(l.phone||"")}')">📞 Chiama</button><button class="btn outline" onclick="toast('WhatsApp (canale non ancora collegato)')">WhatsApp</button>${canReassign?`<button class="btn outline" onclick="reassign('${l.id}')">Riassegna</button>`:""}</div>
+    </div>
+    <div class="card">
+      <h3>Cambia stato</h3>
+      <p style="color:var(--muted-fg);font-size:.86rem;margin:.3rem 0 .7rem">Passa dalla funzione change_lead_status: solo le transizioni consentite.</p>
+      <div class="btns">${next.map(s=>`<button class="btn ${["lost","invalid"].includes(s)?"outline":"primary"} sm" onclick="${s==="lost"?`S.lostFor='${l.id}';render()`:`setStatus('${l.id}','${s}')`}">${LST[s]}</button>`).join("")||'<span class="pill p-muted">Stato finale</span>'}</div>
+      ${S.lostFor===l.id?`<p style="font-size:.85rem;margin:.9rem 0 .4rem"><b>Motivo della perdita</b></p><div class="btns">${Object.entries(LOST).map(([k,n])=>`<button class="btn outline sm" onclick="setStatus('${l.id}','lost','${k}')">${n}</button>`).join("")}</div>`:""}
+    </div>
+  </div>
+  <div class="card"><h3>Conversazione</h3>${(l.conv||[]).length?`<div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.7rem">${l.conv.map(c=>`<div style="max-width:88%;align-self:${c.dir==="in"?"flex-start":"flex-end"};background:${c.dir==="in"?"var(--secondary)":"var(--primary-soft)"};border-radius:14px;padding:.55rem .85rem;font-size:.9rem"><div>${esc(c.body)}</div><div style="font-size:.7rem;color:var(--muted-fg);margin-top:.15rem">${c.ai?"Assistente IA · ":""}${fdt(c.at)}</div></div>`).join("")}</div>`:`<p style="color:var(--muted-fg);font-size:.88rem;margin:.4rem 0 0">Nessun messaggio registrato.</p>`}
+  ${l.ai?`<div class="ai-box" style="margin-top:.8rem"><b>Assistente IA ·</b> ${esc(l.ai)}</div>`:""}</div>
+  <div class="card"><h3>Storico</h3><ul class="tl" style="margin-top:.8rem">${(l.events||[]).map(e=>`<li>${e.type==="status_change"?"Stato → "+(LST[e.to]||e.to):lbl(e.type)}<span>${fdt(e.at)} · ${e.kind==="ai"?"IA":e.kind==="system"?"sistema":"utente"}</span></li>`).join("")||`<li>Lead ricevuta da ${CH[l.ch]||lbl(l.ch)}<span>${fdt(l.since)}</span></li>`}</ul></div>`;
+}
+function setStatus(id,st,lost){
+  const payload = lost ? `'{"lost_reason":"${lost}"}'::jsonb` : `'{}'::jsonb`;
+  write(`Lead → ${LST[st]}`, `select etidealcrm.change_lead_status('${id}','${st}',${payload})`);
+}
+function reassign(id){ write("Riassegnata con il punteggio 40/40/20", `select etidealcrm.assign_lead('${id}')`); }
+function newLead(){
+  const v = D.vehicles.find(x=>x.st==="published") || D.vehicles[0];
+  const ds = D.vehicles[0] ? `(select dealership_id from etidealcrm.vehicle where id='${D.vehicles[0].id}')` : "null";
+  write("Nuova lead creata dal sito", `with c as (insert into etidealcrm.customer(dealership_id,first_name,last_name,phone,is_demo) values (${ds},'Cliente','Prova ${new Date().toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}','+39333${String(Date.now()).slice(-7)}',true) returning id,dealership_id)
+    insert into etidealcrm.lead(dealership_id,customer_id,channel,source_ref,vehicle_id,interest_text,status,status_changed_at,status_deadline_at,is_demo)
+    select dealership_id,id,'website','L-'||to_char(now(),'HH24MISS'),${v?`'${v.id}'`:"null"},'Richiesta informazioni dal sito','new',now(),now()+interval '2 minutes',true from c`);
+}
+function vAuto(){
+  if(S.veh){const v=D.byV[S.veh];return v?vAutoDetail(v):`<button class="back" onclick="go('auto')">‹ Auto</button><div class="card">Auto non trovata.</div>`;}
+  const qq=S.q.replace(/\s/g,"").toUpperCase();
+  const vs=D.vehicles.filter(v=>!qq||v.plate.includes(qq)||v.name.toUpperCase().includes(qq));
+  const canCost=!["salesperson","yard"].includes(S.role);
+  return `<div class="head"><div><h1>Auto</h1><p>${D.vehicles.length} in stock · ${D.vehicles.filter(v=>v.st==="published").length} pubblicate</p></div></div>
+  <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Cerca per targa" value="${esc(S.q)}" oninput="S.q=this.value;renderKeep()"><button class="btn primary sm" onclick="toast('Scanner targa: nella versione con fotocamera')">Scan</button></div>
+  <div class="card pad0"><div class="list">${vs.map(v=>`<button class="row" onclick="go('auto',{veh:'${v.id}'})"><div class="av" style="font-size:.7rem">${esc(v.plate.slice(0,2))}<br>${esc(v.plate.slice(2,5))}</div><div class="t"><b>${esc(v.name)} · ${v.year||""}</b><span>${esc(v.plate)} · ${Number(v.km||0).toLocaleString("it-IT")} km · ${v.days} gg in stock${canCost?" · "+fmt(v.price):""}</span></div>${vPill(v.st)}</button>`).join("")||'<div class="row">Nessuna auto con questa targa</div>'}</div></div>`;
+}
+function vAutoDetail(v){
+  const canCost=!["salesperson","yard"].includes(S.role);
+  const leads=D.leads.filter(l=>l.vehicle_id===v.id);
+  const deal=D.deals.find(d=>d.vehicle_id===v.id);
+  const conds=v.conds||[]; const a=conds[0], b=conds[conds.length-1];
+  const condBlock = (c,t) => `<div><b style="font-size:.82rem;color:var(--muted-fg)">${t}</b><dl class="kv"><dt>Carburante</dt><dd>${FUEL[c.fuel]||lbl(c.fuel)}</dd><dt>Km</dt><dd>${Number(c.km||0).toLocaleString("it-IT")}</dd><dt>Data</dt><dd>${fd(c.at)}</dd></dl>${(c.dmg||[]).map(d=>`<div class="dmg"><span class="pill ${d.rep?"p-ok":d.sev==="medium"?"p-warn":d.sev==="severe"?"p-bad":"p-muted"}">${d.rep?"riparato":SEV[d.sev]||d.sev}</span>${DMG[d.type]||lbl(d.type)} · ${lbl(d.zone)}</div>`).join("")||'<div class="dmg">Nessun danno</div>'}</div>`;
+  return `<button class="back" onclick="go('auto')">‹ Auto</button>
+  <div class="head"><div><h1>${esc(v.name)}</h1><p>${esc(v.plate)} · ${v.year||""} · ${Number(v.km||0).toLocaleString("it-IT")} km · ${lbl(v.fuel)}</p></div>${vPill(v.st)}</div>
+  <div class="grid2">
+    <div class="card"><h3>Scheda</h3><dl class="kv" style="margin-top:.6rem"><dt>Carrozzeria</dt><dd>${lbl(v.body)}</dd><dt>Colore</dt><dd>${lbl(v.color)}</dd><dt>Fornitore</dt><dd>${esc(v.sup||"—")}</dd><dt>Giorni in stock</dt><dd>${v.days}${v.days>60?' <span class="pill p-warn">oltre 60</span>':""}</dd><dt>Posizione</dt><dd>${esc(v.slot)} · ${lbl(v.yard)}</dd><dt>Prezzo</dt><dd>${fmt(v.price)}</dd>${canCost?`<dt>Costo acquisto</dt><dd>${fmt(v.cost)}</dd><dt>Ricondizionamento</dt><dd>${fmt(v.recond)}</dd><dt>Margine stimato</dt><dd style="color:var(--primary)">${fmt(v.price-v.cost-v.recond)}</dd>`:""}</dl>
+    <div class="btns" style="margin-top:.9rem">${leads.slice(0,2).map(l=>`<button class="btn outline sm" onclick="go('lead',{lead:'${l.id}'})">Lead ${esc(l.ref||"")}</button>`).join("")}${deal?`<button class="btn outline sm" onclick="go('pratica')">Pratica</button>`:""}</div></div>
+    <div class="card"><h3>Foto <span class="pill p-muted">${v.photos||0}</span></h3><div class="photos" style="margin-top:.7rem">${["Ant. sx","Ant. dx","Post. sx","Post. dx","Interni","Cruscotto","Bagagliaio"].map(p=>`<div class="photo">${p}</div>`).join("")}<button class="photo add" onclick="toast('Caricamento foto: nella versione con fotocamera')">+ Aggiungi</button></div></div>
+  </div>
+  ${conds.length>=2?`<div class="card"><div class="head"><h3>Check condizioni: ${lbl(a.phase)} vs ${lbl(b.phase)}</h3>${(b.km-a.km)>50?'<span class="pill p-warn">+'+(b.km-a.km)+' km da giustificare</span>':'<span class="pill p-ok">+'+(b.km-a.km)+' km</span>'}</div><div class="grid2" style="margin-top:.8rem">${condBlock(a,"PRIMA")}${condBlock(b,"DOPO")}</div><button class="btn primary sm" style="margin-top:.8rem" onclick="toast('Nuovo check: nella versione con fotocamera')">Nuovo check</button></div>`
+  : conds.length===1?`<div class="card"><div class="head"><h3>Check condizioni</h3><span class="pill p-ok">${lbl(a.phase)} fatto</span></div><div style="margin-top:.6rem">${condBlock(a,"INGRESSO")}</div></div>`
+  : `<div class="card"><div class="head"><h3>Check condizioni</h3><span class="pill p-warn">Ingresso da fare</span></div><p style="color:var(--muted-fg);font-size:.88rem;margin:.4rem 0 0">Il check di ingresso è obbligatorio entro 24 ore.</p></div>`}
+  <div class="card"><h3>Storico</h3><ul class="tl" style="margin-top:.8rem">${(v.events||[]).map(e=>`<li>${e.type==="status_change"?"Stato → "+((VST[e.to]||[e.to])[0]):e.type==="work"?"Lavorazione: "+lbl(e.payload&&e.payload.kind):e.type==="lead"?"Lead "+esc(e.payload&&e.payload.source_ref||""):e.type==="yard_position"?"Posizione aggiornata":lbl(e.type)}<span>${fdt(e.at)}</span></li>`).join("")||`<li>Ingresso${v.sup?" da "+esc(v.sup):""}<span>${v.days} giorni fa</span></li>`}</ul></div>
+  <div class="card"><div class="head"><h3>Annunci</h3></div><div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.6rem;font-size:.9rem">${(v.listings||[]).map(l=>`<div style="display:flex;justify-content:space-between"><span>${esc(l.portal)}</span><span class="pill ${l.st==="published"?"p-ok":l.st==="suspended"?"p-warn":l.st==="error"?"p-bad":"p-muted"}">${lbl(l.st)}</span></div>`).join("")||'<span style="color:var(--muted-fg)">Nessun annuncio pubblicato</span>'}</div></div>`;
+}
+function vPratica(){
+  const d=D.deals[0];
+  if(!d) return `<div class="head"><h1>Pratica</h1></div><div class="card"><p>Nessuna pratica aperta.</p></div>`;
+  const v=D.byV[d.vehicle_id]||{}, items=d.items||[], rev=items.filter(i=>i.kind==="revenue").reduce((a,i)=>a+Number(i.act??i.est??0),0), cost=items.filter(i=>i.kind==="cost").reduce((a,i)=>a+Number(i.act??i.est??0),0), tot=rev-cost, max=Math.max(1,...items.map(i=>Number(i.act??i.est??0)));
+  const steps=[["open","Aperta"],["quote_sent","Preventivo inviato"],["contract_pending","Contratto in attesa"],["signed","Firmata"],["payment_pending","Pagamento"],["transfer_documents","Passaggio di proprietà"],["delivered","Consegnata"]];
+  const idx=steps.findIndex(s=>s[0]===d.st);
+  const fin=d.fin||{};
+  const recent=(D.outbox||[]).filter(o=>o.action==="withdraw");
+  return `<div class="head"><div><h1>Pratica</h1><p>${esc(v.name||"")} · ${esc(v.plate||"")} · ${esc(sellerName(d.seller))}</p></div><span class="pill ${d.st==="signed"?"p-ok":"p-warn"}">${DST[d.st]||d.st}</span></div>
+  <div class="kpis"><div class="card kpi"><div class="l">Prezzo</div><div class="v">${fmt(d.price)}</div></div><div class="card kpi"><div class="l">Caparra</div><div class="v">${fmt(d.deposit)}</div><div class="s">${Number(d.deposit)>0?"auto riservata":""}</div></div><div class="card kpi"><div class="l">Finanziamento</div><div class="v" style="font-size:1.05rem">${fin.amount?fmt(fin.amount)+" in "+fin.installments+" rate":"nessuno"}</div></div><div class="card kpi"><div class="l">Margine stimato</div><div class="v" style="color:var(--primary)">${fmt(tot)}</div><div class="s">${items.some(i=>i.act!=null)?"con importi reali":"reale: da confermare"}</div></div></div>
+  <div class="grid2">
+    <div class="card"><div class="head"><h3>Margine a voci</h3><button class="btn ghost sm" onclick="toast('Aggiunta voce: nel modulo F&I')">+ Voce</button></div>
+      <div class="margin" style="margin-top:.8rem">${items.map(i=>{const n=Number(i.act??i.est??0),neg=i.kind==="cost";return `<div class="mrow"><div><b>${ITEM[i.type]||lbl(i.type)}</b><div style="font-size:.78rem;color:var(--muted-fg)">${i.act!=null?"reale":"stimato"} · ${esc(i.source||"")} · ${lbl(i.status)}</div></div><span class="amt ${neg?"neg":""}">${neg?"−":"+"}${fmt(n)}</span><div class="bar"><i style="width:${n/max*100}%;${neg?"background:var(--destructive)":""}"></i></div></div>`}).join("")}
+      <div class="total"><span>Ricavi ${fmt(rev)} · costi ${fmt(cost)}</span><b>${fmt(tot)}</b></div></div></div>
+    <div class="card"><h3>Avanzamento</h3><ul class="tl" style="margin:.8rem 0 1rem">${steps.map((s,i)=>`<li style="${i>idx?"opacity:.5":""}">${s[1]}<span>${i<idx?"fatto":i===idx?"in corso":"da fare"}</span></li>`).join("")}</ul>
+      <div class="btns"><button class="btn primary" onclick="toast('Contratto PDF: Edge Function generate-contract da collegare')">Genera contratto</button>${idx<3?`<button class="btn outline" onclick="signDeal('${d.id}')">Segna firmato</button>`:""}<button class="btn outline" onclick="requestInvoice('${d.id}')">Prepara fattura</button></div>
+      <p style="font-size:.8rem;color:var(--muted-fg);margin:.8rem 0 0">Alla firma on_deal_signed: auto → venduta, lead → vinta, ritiro annunci in outbox, notifica ad amministrazione e F&amp;I.</p>
+      ${recent.length?`<p style="font-size:.8rem;margin:.6rem 0 0"><b>Outbox:</b> ${recent.map(o=>esc(o.integration)+" "+lbl(o.st)).join(", ")}</p>`:""}</div>
+  </div>
+  ${invoiceCard(d)}`;
+}
+const IST={draft:["Bozza (prova)","p-muted"],queued:["In coda","p-info"],created:["Creata","p-ok"],sent:["Inviata a SDI","p-ok"],paid:["Pagata","p-ok"],error:["Errore","p-bad"],cancelled:["Annullata","p-muted"]};
+function invoiceCard(d){
+  const inv=(D.invoices||[]).filter(i=>i.deal_id===d.id); const fic=D.fic||{}; const cfg=D.settings.fatture_in_cloud||{};
+  return `<div class="card"><div class="head"><div><h3>Fatture in Cloud</h3><p>${fic.connected?"Collegato: "+esc(fic.company_name||fic.company_id):"Non collegato: avvia fic-oauth dai Parametri"} · ${cfg.dry_run!==false?"modalità prova (dry run)":"invio attivo"}</p></div>${fic.connected?'<span class="pill p-ok">Connesso</span>':'<span class="pill p-muted">Da collegare</span>'}</div>
+  ${inv.length?`<div class="list" style="margin-top:.6rem">${inv.map(i=>{const it=(i.payload&&i.payload.data&&i.payload.data.items_list)||[];const tot=it.reduce((a,x)=>a+Number(x.net_price||0),0);return `<div class="row" style="padding-left:0;padding-right:0"><div class="t"><b>${i.kind==="proforma"?"Proforma":i.kind==="credit_note"?"Nota di credito":"Fattura"} ${i.number?i.number+(i.numeration||""):""}</b><span>${fdt(i.at)} · ${i.gross?fmt(i.gross):"imponibile stimato "+fmt(tot)}${i.err?" · "+esc(i.err):""}</span></div><span class="pill ${(IST[i.st]||["",""])[1]}">${(IST[i.st]||[i.st])[0]}</span></div>`}).join("")}</div>`:`<p style="color:var(--muted-fg);font-size:.88rem;margin:.5rem 0 0">Nessuna fattura preparata. "Prepara fattura" costruisce il documento dalla pratica (veicolo in regime del margine, accessori al 22%, caparra incassata) e lo mette in coda.</p>`}</div>`;
+}
+function requestInvoice(dealId){ write("Fattura preparata e messa in coda", `select etidealcrm.request_invoice('${dealId}')`); }
+function signDeal(id){ write("Firmata: auto venduta, lead vinta, annunci in ritiro", `select etidealcrm.on_deal_signed('${id}')`); }
+function vPiazzale(){
+  const occ={}; D.vehicles.forEach(v=>{ if(v.slot&&v.slot!=="—") occ[v.slot]=v; });
+  const sel=S.slot?occ[S.slot]:null;
+  const stale=D.vehicles.filter(v=>!v.verified||Date.now()-new Date(v.verified)>7*86400000);
+  const canWrite=["yard","admin","used_manager","sales_manager"].includes(S.role);
+  return `<div class="head"><div><h1>Piazzale</h1><p>Vista a griglia · la mappa satellitare si attiva con la chiave Google Maps</p></div></div>
+  ${sel?`<div class="card fade"><div class="head"><div><h3>${esc(sel.name)}</h3><p>${esc(sel.plate)} · stallo ${esc(sel.slot)} · ${sel.days} gg in stock · verificata ${fd(sel.verified)}</p></div><div class="btns"><button class="btn outline sm" onclick="go('auto',{veh:'${sel.id}'})">Scheda</button>${canWrite?`<button class="btn primary sm" onclick="verifyPos('${sel.id}')">Conferma posizione</button>`:""}<button class="btn ghost sm" onclick="S.slot=null;render()">Chiudi</button></div></div></div>`:""}
+  ${S.moving?`<div class="card" style="border-color:var(--primary)"><div class="head"><div><h3>Sposta ${esc(D.byV[S.moving].plate)}</h3><p>Tocca lo stallo libero di destinazione.</p></div><button class="btn ghost sm" onclick="S.moving=null;render()">Annulla</button></div></div>`:""}
+  ${D.zones.map(z=>`<div class="card"><div class="head"><h3>${z.code==="W"?"Officina":"Zona "+esc(z.code)}${z.name?` <span style="font-weight:500;color:var(--muted-fg);font-size:.85rem">${esc(z.name)}</span>`:""}</h3><span class="pill p-muted">${(z.slots||[]).filter(s=>occ[s.code]).length}/${(z.slots||[]).length} occupati</span></div><div class="yard" style="margin-top:.7rem">${(z.slots||[]).map(s=>{const v=occ[s.code];
+      if(S.moving) return v?`<button class="slot ${z.code==="W"?"shop":"busy"}" disabled style="opacity:.5"><b>${esc(v.plate)}</b></button>`:`<button class="slot sel" onclick="moveTo('${s.id}','${z.code==="W"?"workshop":"in_yard"}')">${esc(s.code)}</button>`;
+      return `<button class="slot ${v?(z.code==="W"?"shop":"busy"):""} ${S.slot===s.code?"sel":""}" onclick="${v?`S.slot='${s.code}';render()`:`toast('Stallo ${s.code} libero')`}">${v?`<b>${esc(v.plate)}</b><span>${esc(v.name.split(" ")[0])}</span>`:esc(s.code)}</button>`}).join("")}</div></div>`).join("")}
+  ${sel&&canWrite&&!S.moving?`<div class="btns"><button class="btn outline" onclick="S.moving='${sel.id}';render()">Sposta ${esc(sel.plate)} in un altro stallo</button></div>`:""}
+  ${stale.length?`<div class="card" style="border-color:hsl(38 92% 50% / .5)"><div class="head"><div><h3>Da verificare</h3><p>${stale.map(v=>esc(v.plate)).join(", ")}: posizione non verificata da più di 7 giorni.</p></div></div></div>`:""}`;
+}
+function verifyPos(id){ write("Posizione confermata", `update etidealcrm.vehicle set yard_verified_at=now() where id='${id}'; insert into etidealcrm.vehicle_event(vehicle_id,type,payload) values ('${id}','yard_position','{"verified":true}'::jsonb)`); }
+function moveTo(slotId,ys){ const id=S.moving; S.moving=null; S.slot=null; write("Auto spostata", `update etidealcrm.vehicle set yard_slot_id='${slotId}', yard_status='${ys}', yard_verified_at=now() where id='${id}'; insert into etidealcrm.vehicle_event(vehicle_id,type,payload) values ('${id}','yard_position',jsonb_build_object('slot_id','${slotId}','yard_status','${ys}'))`); }
+function vParametri(){
+  if(!["sales_manager","admin","used_manager"].includes(S.role)) return `<div class="head"><h1>Parametri</h1></div><div class="card"><p>Il ruolo <b>${ROLES[S.role]}</b> non può modificare i parametri. Cambia ruolo dal menu per provare.</p></div>`;
+  const a=D.settings.ai_switches||{}, t=(D.settings.lead_timers||{}), esc_=t.escalation_assigned_min||{}, ap=D.settings.assignment_params||{}, w=D.settings.assignment_weights||{}, vb=D.settings.value_bands||{};
+  const fc=D.settings.fatture_in_cloud||{}, mp=Object.assign({map_type:'satellite',default_zoom:19,snap_radius_m:15},D.settings.maps||{});
+  const swf=(k,n,d)=>`<div class="sw"><div><b>${n}</b><span>${d}</span></div><button class="toggle ${fc[k]?"on":""}" role="switch" aria-checked="${!!fc[k]}" aria-label="${n}" onclick="setFic('${k}',${!fc[k]},'${n}')"></button></div>`;
+  const sw=(k,n,d)=>`<div class="sw"><div><b>${n}</b><span>${d}</span></div><button class="toggle ${a[k]?"on":""}" role="switch" aria-checked="${!!a[k]}" aria-label="${n}" onclick="setAi('${k}',${!a[k]},'${n}')"></button></div>`;
+  const num=(path,val,n,d,unit)=>`<div class="sw"><div><b>${n}</b><span>${d}</span></div><div class="num"><input id="t_${path.replace(/\W/g,"_")}" type="number" value="${val??""}" onchange="setTimer('${path}',this.value,'${n}')"><span>${unit}</span></div></div>`;
+  return `<div class="head"><div><h1>Parametri</h1><p>Ogni modifica si salva in setting e nello storico</p></div></div>
+  <div class="grid2">
+    <div class="card"><h3>Assistente IA</h3><div style="margin-top:.5rem">${sw("voice","Telefonate","Risponde e qualifica le chiamate in arrivo")}${sw("whatsapp","WhatsApp","Risponde ai messaggi con modelli approvati")}${sw("social","Social","Instagram e Facebook DM")}${sw("out_of_hours_reply","Fuori orario","Risponde anche fuori dall'orario di lavoro")}</div><p style="font-size:.8rem;color:var(--muted-fg);margin:.8rem 0 0">Modalità: ${lbl(a.mode)}. Canale spento: le lead nuove vanno al responsabile vendite con una notifica.</p></div>
+    <div class="card"><h3>Timer lead assegnata</h3><div style="margin-top:.5rem">
+      ${num("escalation_assigned_min.warn_salesperson",esc_.warn_salesperson,"Avviso al venditore","minuti senza presa in carico","min")}
+      ${num("escalation_assigned_min.warn_manager",esc_.warn_manager,"Avviso al responsabile","minuti","min")}
+      ${num("escalation_assigned_min.reassign",esc_.reassign,"Riassegnazione automatica","minuti","min")}
+      ${num("max_reassignments",t.max_reassignments,"Riassegnazioni massime","poi al responsabile","")}
+      ${num("auto_lose_days",t.auto_lose_days,"Persa automatica","giorni senza attività","gg")}
+    </div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Fatture in Cloud</h3><dl class="kv" style="margin-top:.6rem"><dt>Stato</dt><dd>${(D.fic&&D.fic.connected)?"Collegato · "+esc(D.fic.company_name||D.fic.company_id):"Non collegato"}</dd><dt>Azienda</dt><dd>${esc(fc.company_id||"—")}</dd><dt>Numerazione</dt><dd>${esc(fc.numeration||"—")}</dd><dt>IVA standard / margine</dt><dd>${esc(fc.vat_id_standard??"—")} / ${esc(fc.vat_id_margin??"—")}</dd><dt>Fattura alla</dt><dd>${fc.invoice_on==="signed"?"firma":"consegna"}</dd></dl>
+      <div style="margin-top:.4rem">${swf("enabled","Integrazione attiva","Spenta: le fatture restano in coda")}${swf("dry_run","Modalità prova","Verifica i totali senza creare documenti")}</div>
+      <p style="font-size:.8rem;color:var(--muted-fg);margin:.8rem 0 0">Per collegare: apri fic-oauth?action=start con i segreti impostati; poi le aliquote da fic-invoice?action=lookups.</p></div>
+    <div class="card"><h3>Google Maps</h3><dl class="kv" style="margin-top:.6rem"><dt>Sede (lat, lng)</dt><dd>${D.dealership&&D.dealership.lat?D.dealership.lat.toFixed(5)+", "+D.dealership.lng.toFixed(5):"da impostare"}</dd><dt>Map ID</dt><dd>${esc(mp.map_id||"da impostare")}</dd><dt>Vista</dt><dd>${lbl(mp.map_type)} · zoom ${mp.default_zoom}</dd><dt>Aggancio allo stallo</dt><dd>${mp.snap_radius_m} m</dd><dt>Stalli con coordinate</dt><dd>${D.slots_geo||0}/${D.zones.reduce((a,z)=>a+(z.slots||[]).length,0)}</dd></dl>
+      <div class="num" style="margin-top:.8rem;flex-wrap:wrap"><input id="m_lat" type="text" placeholder="lat" value="${D.dealership&&D.dealership.lat||""}" style="width:110px;text-align:left"><input id="m_lng" type="text" placeholder="lng" value="${D.dealership&&D.dealership.lng||""}" style="width:110px;text-align:left"><button class="btn primary sm" onclick="setCenter()">Salva sede</button></div>
+      <p style="font-size:.8rem;color:var(--muted-fg);margin:.8rem 0 0">La mappa satellitare vive nell'app vera (Maps JavaScript API): questa pagina non può caricare script di Google.</p></div>
+  </div>
+  <div class="card"><h3>Assegnazione</h3><dl class="kv" style="margin-top:.6rem"><dt>Performance</dt><dd>${Math.round((w.performance||0)*100)}%</dd><dt>Rotazione</dt><dd>${Math.round((w.rotation||0)*100)}%</dd><dt>Carico</dt><dd>${Math.round((w.load||0)*100)}%</dd><dt>Lead aperte max</dt><dd>${ap.max_open_leads??"—"}</dd><dt>Fascia A</dt><dd>fino a ${fmt(vb.A&&vb.A.max)}</dd><dt>Fascia B</dt><dd>${fmt(vb.B&&vb.B.min)} – ${fmt(vb.B&&vb.B.max)}</dd><dt>Fascia C</dt><dd>${fmt(vb.C&&vb.C.min)} – ${fmt(vb.C&&vb.C.max)} · solo sopra la mediana</dd><dt>Fascia D</dt><dd>oltre ${fmt(vb.D&&vb.D.min)} · i ${ap.band_d_top_n||3} migliori</dd></dl></div>
+  <div class="card pad0"><div class="head" style="padding:1rem 1.1rem .5rem"><h3>Venditori</h3></div><div class="list">${D.sellers.filter(s=>s.role==="salesperson").map(s=>`<div class="row"><div class="av">${esc(s.name.split(" ").map(x=>x[0]).join(""))}</div><div class="t"><b>${esc(s.name)}</b><span>chiusura ${Math.round(Number(s.rate)*100)}% · risposta ${s.resp??"—"} min · ${s.open} aperte · ${s.recv30} ricevute 30 gg · fasce ${(s.bands||[]).join("-")}</span></div>${!s.available?'<span class="pill p-muted">Non disponibile</span>':(s.bands||[]).includes("D")?'<span class="pill p-ok">A-D</span>':'<span class="pill p-info">A-B</span>'}</div>`).join("")}</div></div>`;
+}
+function setAi(k,val,n){ write(`${n}: ${val?"acceso":"spento"}`, `update etidealcrm.setting set value = jsonb_set(value,'{${k}}','${val}'::jsonb), updated_at=now() where key='ai_switches'`); }
+function setFic(k,val,n){ write(`${n}: ${val?"sì":"no"}`, `update etidealcrm.setting set value = jsonb_set(value,'{${k}}','${val}'::jsonb), updated_at=now() where key='fatture_in_cloud'`); }
+function setCenter(){ const la=parseFloat(document.getElementById("m_lat").value.replace(",",".")), ln=parseFloat(document.getElementById("m_lng").value.replace(",",".")); if(isNaN(la)||isNaN(ln)) return toast("Inserisci latitudine e longitudine"); write("Sede salvata", `update etidealcrm.dealership set lat=${la}, lng=${ln}`); }
+function setTimer(path,val,n){ const p="{"+path.split(".").join(",")+"}"; write(`Salvato: ${n} = ${val}`, `update etidealcrm.setting set value = jsonb_set(value,'${p}','${Number(val)||0}'::jsonb), updated_at=now() where key='lead_timers'`); }
+
+// ---------- Render ----------
+const V={oggi:vOggi,lead:vLead,auto:vAuto,pratica:vPratica,piazzale:vPiazzale,parametri:vParametri};
+function render(){
+  if(!D) return;
+  const vis=SCREENS.filter(([k])=>!(S.role==="yard"&&(k==="parametri"||k==="pratica")));
+  if(!vis.some(([k])=>k===S.screen)) S.screen="oggi";
+  document.getElementById("nav").innerHTML=vis.map(([k,n])=>`<button class="${S.screen===k?"on":""}" onclick="go('${k}')">${ic[k]}<span>${n}</span></button>`).join("");
+  document.getElementById("tabbar").innerHTML=vis.map(([k,n])=>`<button class="${S.screen===k?"on":""}" onclick="go('${k}')">${ic[k]}${n}</button>`).join("");
+  document.getElementById("topTitle").textContent=SCREENS.find(s=>s[0]===S.screen)[1];
+  document.getElementById("liveD").innerHTML=`<span class="live"><i></i>Supabase · ${loadedAt?loadedAt.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"}):""}</span><br>`;
+  const view=document.getElementById("view");view.className="wrap fade";view.innerHTML=V[S.screen]();
+  for(const id of["roleD","roleM"]){const s=document.getElementById(id);s.innerHTML=Object.entries(ROLES).map(([k,n])=>`<option value="${k}" ${S.role===k?"selected":""}>${n}</option>`).join("");s.onchange=e=>{S.role=e.target.value;S.lead=null;S.veh=null;render();toast("Ruolo: "+ROLES[S.role])}}
+}
+function renderKeep(){const el=document.getElementById("q");const pos=el.selectionStart;render();const n=document.getElementById("q");n.focus();n.setSelectionRange(pos,pos)}
+boot();
+</script>
