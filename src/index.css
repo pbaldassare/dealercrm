@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design system ripreso da ID Guard: carta crema calda, teal per l'azione, inchiostro caldo.
+   Tutti i colori in HSL, usati solo tramite i token di tailwind.config.ts. */
+@layer base {
+  :root {
+    --background: 40 40% 94%;
+    --foreground: 30 15% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 30 15% 13%;
+    --primary: 190 75% 33%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 30% 89%;
+    --secondary-foreground: 30 15% 13%;
+    --muted: 40 28% 91%;
+    --muted-foreground: 35 10% 38%;
+    --accent: 191 92% 26%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 4 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 15% 13%;
+    --info: 221 83% 53%;
+    --info-foreground: 0 0% 100%;
+    --danger: 25 95% 53%;
+    --danger-foreground: 0 0% 100%;
+    --success-ink: 142 76% 24%;
+    --warning-ink: 38 92% 27%;
+    --danger-ink: 25 95% 32%;
+    --destructive-ink: 4 72% 38%;
+    --info-ink: 221 83% 40%;
+    --border: 40 22% 85%;
+    --input: 40 22% 82%;
+    --ring: 190 75% 33%;
+    --radius: 1rem;
+    --gradient-primary: linear-gradient(135deg, hsl(190 75% 33%) 0%, hsl(187 65% 42%) 100%);
+    --shadow-glow: 0 12px 32px -12px hsl(190 75% 33% / 0.35);
+    --shadow-card: 0 1px 2px hsl(30 20% 15% / 0.05), 0 10px 28px -18px hsl(30 20% 15% / 0.16);
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: clip;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-weight: 500;
+    line-height: 1.55;
+    overflow-x: clip;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display font-bold;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  button, [role="button"] {
+    user-select: none;
+    touch-action: manipulation;
+  }
+  /* Sotto i 16px iOS fa zoomare la pagina su ogni input. */
+  @media (pointer: coarse) {
+    input, textarea, select { font-size: 16px; }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border bg-card text-card-foreground shadow-card;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold;
+  }
+  .nav-pill {
+    @apply flex w-full items-center gap-3 rounded-full px-4 py-3 text-sm font-semibold text-muted-foreground transition-all duration-300;
+  }
+  .nav-pill:hover { @apply bg-secondary text-foreground; }
+  .nav-pill.active { @apply bg-primary text-primary-foreground shadow-glow; }
+}

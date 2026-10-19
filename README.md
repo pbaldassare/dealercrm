@@ -9,6 +9,7 @@ Gestionale mobile-first per un concessionario di auto usate: lead da più canali
 ## Struttura
 
 ```text
+src/                  app React (PWA)
 docs/                 specifica e variabili
 prototype/index.html  prototipo a file singolo (riferimento grafico e di flusso)
 supabase/migrations/  schema etidealcrm, già applicato al progetto
@@ -20,6 +21,14 @@ supabase/config.toml  schemi esposti e verify_jwt per funzione
 
 Progetto Supabase `moyfkdwsghidkcifesrg` (eu-central-1), schema `etidealcrm`. Lavori pianificati con `pg_cron` ogni minuto: `process_lead_timers()` e `process_outbox()`.
 
+## Avvio
+
+```sh
+cp .env.example .env   # inserire VITE_SUPABASE_ANON_KEY
+npm i
+npm run dev            # http://localhost:8080
+```
+
 ## Stato
 
-Backend e dati demo pronti. Frontend React (PWA) da costruire seguendo la sezione 11 della specifica, una fase alla volta.
+Backend e dati demo pronti. App React: fasi 0 e 1 fatte (accessi, dispositivi, Parametri, Oggi, Lead, Auto). Fasi 2-7 da fare, una alla volta, seguendo la sezione 11 della specifica.
