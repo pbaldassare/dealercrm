@@ -11,6 +11,13 @@ import { LeadDetailPage } from "@/features/leads/LeadDetailPage";
 import { VehicleDetailPage, VehiclesPage } from "@/features/vehicles/VehiclesPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { DevicesPage } from "@/features/devices/DevicesPage";
+import { DealsPage } from "@/features/deals/DealsPage";
+import { DealDetailPage } from "@/features/deals/DealDetailPage";
+import { NewDealPage } from "@/features/deals/NewDealPage";
+import { ReportsPage } from "@/features/reports/ReportsPage";
+import { YardPage } from "@/features/yard/YardPage";
+import { UsersPage } from "@/features/users/UsersPage";
+import { ImportPage } from "@/features/import/ImportPage";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } });
 
@@ -20,10 +27,6 @@ function Protected() {
   if (!session) return <Navigate to="/login" replace />;
   if (!ready) return <PendingDevicePage />;
   return <Shell />;
-}
-
-function Placeholder({ title, phase }: { title: string; phase: string }) {
-  return <><h1 className="text-2xl">{title}</h1><p className="card p-4 text-sm text-muted-foreground">Arriva con la {phase} della specifica.</p></>;
 }
 
 export default function App() {
@@ -39,8 +42,13 @@ export default function App() {
               <Route path="lead/:id" element={<LeadDetailPage />} />
               <Route path="auto" element={<VehiclesPage />} />
               <Route path="auto/:id" element={<VehicleDetailPage />} />
-              <Route path="pratiche" element={<Placeholder title="Pratiche" phase="fase 4" />} />
-              <Route path="piazzale" element={<Placeholder title="Piazzale" phase="fase 5" />} />
+              <Route path="pratiche" element={<DealsPage />} />
+              <Route path="pratiche/nuova" element={<NewDealPage />} />
+              <Route path="pratiche/:id" element={<DealDetailPage />} />
+              <Route path="piazzale" element={<YardPage />} />
+              <Route path="report" element={<ReportsPage />} />
+              <Route path="import" element={<ImportPage />} />
+              <Route path="utenti" element={<UsersPage />} />
               <Route path="parametri" element={<SettingsPage />} />
               <Route path="dispositivi" element={<DevicesPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />

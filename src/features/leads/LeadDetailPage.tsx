@@ -84,6 +84,7 @@ export function LeadDetailPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             {l.customer?.phone && <a href={`tel:${l.customer.phone}`}><Button>Chiama</Button></a>}
             {l.customer?.phone && <a href={`https://wa.me/${l.customer.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"><Button variant="outline">WhatsApp</Button></a>}
+            {!["lost", "invalid"].includes(l.status) && <Link to={`/pratiche/nuova?lead=${l.id}`}><Button variant="outline">Crea pratica</Button></Link>}
           </div>
         </section>
 

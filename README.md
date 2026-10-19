@@ -31,4 +31,4 @@ npm run dev            # http://localhost:8080
 
 ## Stato
 
-Backend e dati demo pronti. App React: fasi 0 e 1 fatte (accessi, dispositivi, Parametri, Oggi, Lead, Auto). Fasi 2-7 da fare, una alla volta, seguendo la sezione 11 della specifica.
+Backend e dati demo pronti. App React: accessi e dispositivi, Oggi, Lead, Auto, Pratiche, Report, Import Excel, Utenti, Piazzale a griglia, Parametri. Da fare: foto e check condizioni, appuntamenti e notifiche, mappa Google, collegamenti veri.

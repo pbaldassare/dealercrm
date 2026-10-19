@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Clock, Users, Car, FileText, MapPin, SlidersHorizontal, Smartphone, LogOut, type LucideIcon } from "lucide-react";
+import { Clock, Users, Car, FileText, MapPin, SlidersHorizontal, Smartphone, LogOut, BarChart3, Upload, UserCog, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ROLE_LABEL, type AppRole } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,10 @@ const ITEMS: Item[] = [
   { to: "/auto", label: "Auto", icon: Car },
   { to: "/pratiche", label: "Pratiche", icon: FileText, roles: ["admin", "owner", "sales_manager", "salesperson", "accounting", "finance_insurance", "used_manager"] },
   { to: "/piazzale", label: "Piazzale", icon: MapPin, roles: ["admin", "owner", "sales_manager", "salesperson", "yard", "used_manager", "reconditioning"] },
+  { to: "/report", label: "Report", icon: BarChart3, roles: ["admin", "owner", "sales_manager", "accounting", "finance_insurance", "used_manager", "marketing"] },
+  { to: "/import", label: "Import", icon: Upload, roles: ["admin", "used_manager"] },
   { to: "/parametri", label: "Parametri", icon: SlidersHorizontal, roles: ["admin", "owner", "sales_manager"] },
+  { to: "/utenti", label: "Utenti", icon: UserCog, roles: ["admin"] },
   { to: "/dispositivi", label: "Dispositivi", icon: Smartphone, roles: ["admin"] },
 ];
 
@@ -66,12 +69,20 @@ export function Shell() {
           </div>
         </main>
         <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-around border-t border-border bg-card px-2 pb-[calc(0.4rem+env(safe-area-inset-bottom))] pt-1.5 md:hidden">
-          {items.slice(0, 5).map((i) => (
+          {(items.length > 5 ? items.slice(0, 4) : items).map((i) => (
             <NavLink key={i.to} to={i.to} end={i.to === "/"}
               className={({ isActive }) => cn("flex min-w-[52px] flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] font-bold text-muted-foreground", isActive && "bg-primary/10 text-primary")}>
               <i.icon className="h-5 w-5" />{i.label}
             </NavLink>
           ))}
+          {items.length > 5 && (
+            <details className="relative">
+              <summary className="flex min-w-[52px] cursor-pointer list-none flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 text-[11px] font-bold text-muted-foreground"><SlidersHorizontal className="h-5 w-5" />Altro</summary>
+              <div className="absolute bottom-full right-0 mb-2 w-44 rounded-2xl border border-border bg-card p-2 shadow-card">
+                {items.slice(4).map((i) => <NavLink key={i.to} to={i.to} className={({ isActive }) => cn("flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold", isActive ? "bg-primary/10 text-primary" : "text-foreground")}><i.icon className="h-4 w-4" />{i.label}</NavLink>)}
+              </div>
+            </details>
+          )}
         </nav>
       </div>
     </div>
