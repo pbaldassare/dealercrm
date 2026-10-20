@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { callFunction, supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -40,7 +40,7 @@ export function DealDetailPage() {
         supabase.from("customer").select("first_name,last_name,phone,email,city").eq("id", d.customer_id).maybeSingle(),
         supabase.from("profile").select("full_name").eq("id", d.salesperson_id).maybeSingle(),
         canCost ? supabase.from("deal_item").select("*").eq("deal_id", id!).order("created_at") : { data: [] },
-        supabase.from("contract").select("id,template_version,pdf_path,generated_at,signed_at").eq("deal_id", id!).order("generated_at", { ascending: false }),
+        supabase.from("contract").select("id,template_version,pdf_path,generated_at,signed_at").eq("deal_id", id!).order("created_at", { ascending: false }),
         canCost ? supabase.from("invoice").select("*").eq("deal_id", id!).order("created_at", { ascending: false }) : { data: [] },
         d.lead_id ? supabase.from("lead").select("id,source_ref,status").eq("id", d.lead_id).maybeSingle() : null,
       ]);
@@ -50,17 +50,16 @@ export function DealDetailPage() {
 
   const refresh = () => { qc.invalidateQueries({ queryKey: ["deal", id] }); qc.invalidateQueries({ queryKey: ["deals"] }); };
   const err = (e: Error) => toast.error(e.message);
+  // Avanzamento con set_deal_status (controlla ruolo e passaggio). Alla firma si genera il contratto,
+  // alla consegna la fattura se Fatture in Cloud è attivo con invoice_on = delivered.
   const setStatus = useMutation({
     mutationFn: async (status: string) => {
-      if (status === "signed") { const { error } = await supabase.rpc("on_deal_signed", { _deal_id: id }); if (error) throw error; return; }
-      const patch: Record<string, unknown> = { status };
-      if (status === "delivered") patch.delivered_at = new Date().toISOString();
-      const { error } = await supabase.from("deal").update(patch).eq("id", id!);
+      const { error } = await supabase.rpc("set_deal_status", { _deal_id: id, _to: status });
       if (error) throw error;
-      if (status === "delivered") {
-        // Con setting.fatture_in_cloud.invoice_on = delivered la fattura si mette in coda da sola
+      if (status === "signed") await callFunction("generate-contract", { deal_id: id }).catch((e: Error) => toast.warning(`Contratto da generare: ${e.message}`));
+      if (status === "delivered" && canInvoice) {
         const { data: cfg } = await supabase.from("setting").select("value").eq("key", "fatture_in_cloud").maybeSingle();
-        if (cfg?.value?.invoice_on === "delivered" && cfg.value.enabled) await supabase.rpc("request_invoice", { _deal_id: id });
+        if (cfg?.value?.invoice_on === "delivered" && cfg.value.enabled) await callFunction("fic-invoice", { deal_id: id }).catch((e: Error) => toast.warning(`Fattura: ${e.message}`));
       }
     },
     onSuccess: (_d, s) => { toast.success(s === "signed" ? "Firmata: auto venduta, lead vinta, annunci in ritiro" : `Pratica → ${DEAL_STATUS[s][0]}`); refresh(); qc.invalidateQueries({ queryKey: ["lead_open"] }); qc.invalidateQueries({ queryKey: ["vehicle_public"] }); },
@@ -88,12 +87,14 @@ export function DealDetailPage() {
     onSuccess: () => { toast.success("Voce rimossa"); refresh(); }, onError: err,
   });
   const contract = useMutation({
-    mutationFn: async () => { const { data, error } = await supabase.functions.invoke("generate-contract", { body: { deal_id: id } }); if (error) throw error; return data; },
-    onSuccess: () => { toast.success("Contratto generato"); refresh(); }, onError: err,
+    mutationFn: (open: boolean) => callFunction<{ url: string }>("generate-contract", { deal_id: id, open }),
+    onSuccess: (data, open) => { if (!open) { toast.success("Contratto generato"); refresh(); } window.open(data.url, "_blank", "noopener"); },
+    onError: err,
   });
   const invoice = useMutation({
-    mutationFn: async () => { const { error } = await supabase.rpc("request_invoice", { _deal_id: id }); if (error) throw error; },
-    onSuccess: () => { toast.success("Fattura preparata e messa in coda per Fatture in Cloud"); refresh(); }, onError: err,
+    mutationFn: () => callFunction<{ dry_run?: boolean }>("fic-invoice", { deal_id: id }),
+    onSuccess: (data) => { toast.success(data.dry_run ? "Fattura di prova: totali verificati" : "Fattura creata su Fatture in Cloud"); refresh(); },
+    onError: (e: Error) => { toast.error(e.message); refresh(); },
   });
 
   if (deal.isLoading) return <p className="text-sm text-muted-foreground">Carico…</p>;
@@ -189,21 +190,25 @@ export function DealDetailPage() {
         </section>
 
         <section className="card p-4">
-          <div className="flex items-center justify-between"><h3 className="text-base">Contratto</h3><Button size="sm" variant="outline" onClick={() => contract.mutate()} disabled={contract.isPending}>Genera</Button></div>
+          <div className="flex items-center justify-between gap-2"><h3 className="text-base">Contratto</h3>
+            <div className="flex gap-2">
+              {d.contracts.some((c) => c.pdf_path) && <Button size="sm" variant="ghost" onClick={() => contract.mutate(true)} disabled={contract.isPending}>Apri</Button>}
+              <Button size="sm" variant="outline" onClick={() => contract.mutate(false)} disabled={contract.isPending}>Genera</Button>
+            </div></div>
           {d.contracts.length ? (
-            <ul className="mt-3 text-sm">{d.contracts.map((c) => <li key={c.id} className="flex justify-between border-t border-border py-2 first:border-t-0"><span>Modello {c.template_version} {c.signed_at ? <Pill tone="ok">firmato</Pill> : ""}</span><span className="text-muted-foreground">{fmtDateTime(c.generated_at)}</span></li>)}</ul>
-          ) : <p className="mt-2 text-sm text-muted-foreground">Nessun contratto generato. Il modello definitivo va caricato in templates/contratto-vendita.md.</p>}
+            <ul className="mt-3 text-sm">{d.contracts.map((c) => <li key={c.id} className="flex justify-between border-t border-border py-2 first:border-t-0"><span>{c.pdf_path ? `Modello ${c.template_version}` : "Importi congelati alla firma"} {c.signed_at ? <Pill tone="ok">firmato</Pill> : ""}</span><span className="text-muted-foreground">{c.generated_at ? fmtDateTime(c.generated_at) : "da generare"}</span></li>)}</ul>
+          ) : <p className="mt-2 text-sm text-muted-foreground">Nessun contratto generato. Per ora è una bozza HTML da stampare: il modello definitivo arriva con la fase 4.</p>}
         </section>
 
         {canCost && (
           <section className="card p-4">
-            <div className="flex items-center justify-between"><h3 className="text-base">Fatture in Cloud</h3>{canInvoice && <Button size="sm" variant="outline" onClick={() => invoice.mutate()} disabled={invoice.isPending}>Prepara fattura</Button>}</div>
+            <div className="flex items-center justify-between"><h3 className="text-base">Fatture in Cloud</h3>{canInvoice && <Button size="sm" variant="outline" onClick={() => invoice.mutate()} disabled={invoice.isPending}>{invoice.isPending ? "Invio…" : "Prepara fattura"}</Button>}</div>
             {d.invoices.length ? (
               <ul className="mt-3 text-sm">{d.invoices.map((i: { id: string; kind: string; status: string; number: number | null; numeration: string | null; amount_gross: number | null; created_at: string; last_error: string | null; dry_run: boolean }) => {
                 const [l, t] = INV_STATUS[i.status] ?? [i.status, "muted" as Tone];
                 return <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-border py-2 first:border-t-0"><div><b>{i.kind === "proforma" ? "Proforma" : i.kind === "credit_note" ? "Nota di credito" : "Fattura"} {i.number ? `${i.number}${i.numeration ?? ""}` : ""}</b><div className="text-xs text-muted-foreground">{fmtDateTime(i.created_at)} · {i.amount_gross ? fmtEur(i.amount_gross) : i.dry_run ? "prova" : ""}{i.last_error ? ` · ${i.last_error}` : ""}</div></div><Pill tone={t}>{l}</Pill></li>;
               })}</ul>
-            ) : <p className="mt-2 text-sm text-muted-foreground">Nessuna fattura. "Prepara fattura" costruisce il documento dalla pratica (veicolo in regime del margine, accessori al 22%, caparra incassata) e lo mette in coda.</p>}
+            ) : <p className="mt-2 text-sm text-muted-foreground">Nessuna fattura. "Prepara fattura" costruisce il documento dalla pratica (veicolo in regime del margine, accessori al 22%, caparra incassata) e lo invia a Fatture in Cloud (in prova finché è attiva la modalità prova).</p>}
           </section>
         )}
       </div>

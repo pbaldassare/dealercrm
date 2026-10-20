@@ -1,9 +1,9 @@
 /**
  * Identificativo di installazione: surroga dell'indirizzo MAC, che una web app non può leggere.
  * Generato al primo avvio, salvato in modo persistente e inviato a ogni richiesta come header x-device-id.
- * Il database lo confronta con etidealcrm.device (stato authorized) nelle policy delle tabelle sensibili.
+ * Il database lo confronta con dealercrm.device (stato authorized): senza dispositivo approvato non si legge nessun dato.
  */
-const KEY = "etidealcrm.install_id";
+const KEY = "dealercrm.install_id";
 
 export function getInstallId(): string {
   try {

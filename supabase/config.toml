@@ -1,11 +1,14 @@
 project_id = "moyfkdwsghidkcifesrg"
 
-# Schema applicativo: etidealcrm (il progetto Supabase ospita anche etideal, tf_* e altri schemi: non toccarli)
+# Schema applicativo: dealercrm (il progetto Supabase ospita anche etideal, tf_* e altri schemi: non toccarli)
 [api]
-schemas = ["public", "etideal", "etidealcrm", "graphql_public"]
+schemas = ["public", "etideal", "dealercrm", "graphql_public"]
 
-# Funzioni pubbliche (webhook, OAuth): autenticazione propria nel corpo
+# Webhook e OAuth: si autenticano da soli (firma HMAC, firma ES256, state firmato)
 [functions.lead-inbound]
+verify_jwt = false
+
+[functions.ai-result]
 verify_jwt = false
 
 [functions.fic-oauth]
@@ -14,9 +17,7 @@ verify_jwt = false
 [functions.fic-webhook]
 verify_jwt = false
 
-[functions.ai-result]
-verify_jwt = true
-
+# Chiamate dall'app o di sistema: token obbligatorio, poi controllo di ruolo nella funzione
 [functions.process-timers]
 verify_jwt = true
 
@@ -27,4 +28,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.fic-invoice]
+verify_jwt = true
+
+[functions.manage-user]
 verify_jwt = true

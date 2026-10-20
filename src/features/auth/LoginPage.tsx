@@ -28,7 +28,7 @@ export function LoginPage() {
       <div className="card w-full max-w-sm p-6">
         <div className="mb-6 flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-white shadow-glow"><Car className="h-6 w-6" /></div>
-          <div><h1 className="text-2xl">Etideal CRM</h1><p className="text-sm text-muted-foreground">Accesso riservato al personale</p></div>
+          <div><h1 className="text-2xl">Dealer CRM</h1><p className="text-sm text-muted-foreground">Accesso riservato al personale</p></div>
         </div>
         {!supabaseConfigured && (
           <p className="mb-4 rounded-xl bg-warning/15 p-3 text-sm text-warning-ink">Manca la configurazione: copia <code>.env.example</code> in <code>.env</code> e inserisci la chiave di Supabase.</p>

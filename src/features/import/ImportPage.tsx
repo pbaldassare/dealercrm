@@ -179,7 +179,7 @@ async function insertRow(kind: Kind, r: Record<string, unknown>, dealershipId: s
   if (kind === "vehicles") {
     const { data: ex } = await supabase.from("vehicle_public").select("id").eq("plate", r.plate as string).maybeSingle();
     const row = { ...base, plate: r.plate, make: r.make, model: r.model, trim: r.trim, vin: r.vin, first_registration: r.first_registration, mileage_km: r.mileage_km, fuel_type: r.fuel_type, gearbox: r.gearbox, power_kw: r.power_kw, color: r.color, purchase_cost: r.purchase_cost, list_price: r.list_price, sale_price: r.sale_price, entry_date: r.entry_date ?? new Date().toISOString().slice(0, 10), notes: r.notes, kind: "used", status: "received" };
-    if (ex) { if (dup === "skip") return "duplicate"; const { error } = await supabase.from("vehicle").update(row).eq("id", ex.id); return error ? error.message : "ok"; }
+    if (ex) { if (dup === "skip") return "duplicate"; const { status: _s, kind: _k, ...upd } = row; const { error } = await supabase.from("vehicle").update(upd).eq("id", ex.id); return error ? error.message : "ok"; }
     const { error } = await supabase.from("vehicle").insert(row); return error ? error.message : "ok";
   }
   if (kind === "suppliers") {

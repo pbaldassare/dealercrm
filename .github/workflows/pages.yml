@@ -18,7 +18,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      VITE_BASE: /etidealcrm/
+      VITE_BASE: /dealercrm/
       VITE_SUPABASE_URL: https://moyfkdwsghidkcifesrg.supabase.co
       # Chiave "publishable" di Supabase: è pubblica per natura (finisce comunque nel bundle del browser).
       # L'accesso ai dati è protetto da login, RLS e approvazione dei dispositivi, non da questa chiave.

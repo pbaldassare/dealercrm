@@ -6,12 +6,22 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 export const supabaseConfigured = Boolean(url && key);
 
-/** Client unico: schema etidealcrm e header x-device-id su ogni chiamata (REST, RPC e storage). */
+/** Client unico: schema dealercrm e header x-device-id su ogni chiamata (REST, RPC e storage). */
 export const supabase = createClient(url ?? "https://example.invalid", key ?? "anon", {
-  db: { schema: "etidealcrm" },
+  db: { schema: "dealercrm" },
   global: { headers: { "x-device-id": getInstallId() } },
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
+
+/** Chiama una Edge Function e restituisce il messaggio d'errore del server invece di quello generico. */
+export async function callFunction<T = Record<string, unknown>>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(name, { body });
+  if (error) {
+    const detail = await (error as { context?: Response }).context?.json?.().catch(() => null);
+    throw new Error(detail?.error ?? (detail?.missing ? `Dati mancanti: ${detail.missing.join(", ")}` : error.message));
+  }
+  return data as T;
+}
 
 export type AppRole =
   | "admin" | "owner" | "sales_manager" | "salesperson" | "used_manager"

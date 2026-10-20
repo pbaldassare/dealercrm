@@ -1,27 +1,31 @@
 # CLAUDE.md — Istruzioni per Cursor / agenti AI
 
-Leggi `docs/SPEC.md` per intero prima di scrivere codice: è l'unica fonte per obiettivo, regole, modello dati, logiche, schermate, dati demo e ordine di lavoro (sezioni 1-13).
+Leggi `docs/SPEC.md` per intero prima di scrivere codice: è l'unica fonte per obiettivo, regole, modello dati, logiche, schermate, dati demo e ordine di lavoro (sezioni 1-13). Le scelte prese dove la specifica lasciava spazio sono in `docs/DECISIONS.md`.
 
 ## Stato del repository
 
-- `supabase/migrations/` — lo schema `etidealcrm` **già applicato** al progetto Supabase `moyfkdwsghidkcifesrg` (esportato dalla tabella delle migrazioni). Non riapplicarlo: le nuove modifiche al database sono nuove migrazioni, mai modifiche a questi file.
-- `supabase/functions/` — le Edge Functions già deployate: `lead-inbound`, `ai-result`, `process-timers`, `outbox-worker`, `generate-contract` (versione minima, da completare), `fic-oauth`, `fic-invoice`, `fic-webhook` (Fatture in Cloud) e `manage-user` (creazione utenti, reset password, disattivazione: solo admin).
+- `supabase/migrations/` — due file già applicati al progetto Supabase `moyfkdwsghidkcifesrg`: `..._dealercrm_schema.sql` (tutto lo schema `dealercrm`: tabelle, funzioni, viste, RLS, permessi, storage, cron) e `..._dealercrm_demo.sql` (dati demo). Non modificarli: ogni cambiamento al database è una migrazione nuova.
+- `supabase/functions/` — Edge Functions: `lead-inbound` e `ai-result` (webhook con firma HMAC), `process-timers` e `outbox-worker` (solo sistema), `generate-contract` (bozza HTML), `fic-oauth`, `fic-invoice`, `fic-webhook` (Fatture in Cloud), `manage-user` (solo admin). Il codice comune (client, controllo del ruolo e del dispositivo, firma dei webhook, qualifica finta) è in `_shared/`.
 - `prototype/index.html` — pagina di prova a file singolo con la grafica di riferimento (crema caldo, teal, Quicksand + Baloo 2, angoli morbidi, menu a pillole). Serve come riferimento visivo e di flusso: **non è l'app**.
 - `docs/ENV.md` — variabili e segreti, con quelli mancanti.
-- `src/` — l'app React (Vite + TypeScript + Tailwind + React Router + TanStack Query), PWA installabile. **Fatte le fasi 0 e 1**: login e-mail/password, profilo e ruolo da `etidealcrm.profile`, registrazione del dispositivo con `install_id` (header `x-device-id` su ogni chiamata) e schermata "In attesa di approvazione", menu per ruolo, schermate Oggi, Lead (elenco e scheda con cambio stato via `change_lead_status`), Auto (ricerca per targa, scheda), Parametri (interruttori IA, timer, pesi, integrazioni, storico) e Dispositivi (approva/revoca, solo admin). **Backoffice fatto**: Pratiche (elenco, nuova pratica anche da una lead, scheda con margine a voci stimato/reale, avanzamento stati, firma via `on_deal_signed`, contratto, fatture via `request_invoice`), Report (lead per canale e stato, conversione, venditori, stock, margini, piazzale), Import Excel (SheetJS lato browser, mappatura colonne, prova a vuoto, duplicati, `import_job`/`import_row`), Utenti (ruolo, fasce, disponibilità, creazione e reset password via `manage-user`), Piazzale a griglia (conferma e spostamento posizione via `set_vehicle_yard_position`).
-- **Manca ancora**: foto e check delle condizioni dal telefono, lavorazioni, appuntamenti e notifiche in app, riassegnazione manuale, mappa satellitare Google sul piazzale (Map ID e coordinate), riepiloghi via notifica, collegamenti veri (portali, GHL, Fatture in Cloud con credenziali). Il secondo fattore (TOTP) non è ancora attivo: aggiungerlo con Supabase Auth MFA nella fase 1 bis.
+- `src/` — l'app React (Vite + TypeScript + Tailwind + React Router + TanStack Query), PWA installabile. Fatto: login, profilo e ruolo, registrazione del dispositivo con `register_device` e schermata "In attesa di approvazione", menu per ruolo, Oggi, Lead (cambio stato con `change_lead_status`), Auto, Parametri, Dispositivi, Pratiche (avanzamento con `set_deal_status`, contratto con `generate-contract`, fattura con `fic-invoice`), Report, Import Excel, Utenti (`manage-user`), Piazzale a griglia (`set_vehicle_yard_position`).
+- **Manca ancora**: foto e check delle condizioni dal telefono, lavorazioni, appuntamenti e notifiche in app, riassegnazione manuale dall'app (la funzione `assign_lead` c'è), mappa Google sul piazzale, contratto in PDF con il modello definitivo, riepiloghi via notifica, collegamenti veri (portali, GHL, Fatture in Cloud con credenziali), secondo fattore (TOTP con Supabase Auth MFA), test.
 
 ## Regole fisse
 
-- Schema applicativo `etidealcrm`, sempre qualificato; il progetto Supabase ospita altri schemi (`etideal`, `public`, `tf_*`): non toccarli.
-- Ogni nuova tabella: `GRANT` a `authenticated`, `GRANT ALL` a `service_role`, RLS attiva, policy. Vedi le migrazioni esistenti come modello.
-- Nessuna chiave `service_role` nel browser. I costi (`purchase_cost`, `reconditioning`, `deal_item`) non sono leggibili dai ruoli `salesperson`, `reconditioning`, `yard`, `marketing`.
-- I cambi di stato passano solo da `change_lead_status()` e `change_vehicle_status()`.
+- Schema applicativo `dealercrm`, sempre qualificato; il progetto Supabase ospita altri schemi (`etideal`, `public`, `tf_*`): non toccarli.
+- Ogni nuova tabella: RLS attiva, policy, `GRANT` ad `authenticated` (solo le operazioni che servono), `GRANT ALL` a `service_role`. Mai nulla ad `anon`.
+- Ogni nuova funzione: `SECURITY DEFINER SET search_path = dealercrm, pg_temp`, controllo del ruolo all'interno se è chiamabile dall'app, poi `REVOKE ALL ... FROM PUBLIC, anon, authenticated` e `GRANT EXECUTE` solo a chi serve. Le funzioni con prefisso `_` sono interne (solo `service_role`).
+- Ruolo e concessionario si leggono con `dealercrm.my_role()`, `dealercrm.my_dealership()`, `dealercrm.has_role(...)`: valgono solo con utente attivo e dispositivo approvato (header `x-device-id`).
+- Gli stati cambiano solo da `change_lead_status()`, `change_vehicle_status()` e `set_deal_status()`: un trigger blocca ogni altro `UPDATE` di `status`.
+- Nessuna chiave `service_role` nel browser. I costi (`purchase_cost`, lavorazioni, `deal_item`) non sono leggibili dai ruoli `salesperson`, `reconditioning`, `yard`, `marketing`.
+- Le viste sono di sola lettura per `authenticated` (una vista semplice sarebbe aggiornabile scavalcando la RLS).
 - Valori modificabili (timer, pesi, fasce, interruttori IA, Fatture in Cloud, mappa) in `setting`, mai nel codice.
 - Integrazioni esterne dietro adattatori con mock e interruttore `FEATURE_*_REAL`.
 - Interfaccia in italiano, codice e nomi in inglese. Mobile first (360-430 px).
 - Grafica: i token sono in `src/index.css` (variabili HSL) e `tailwind.config.ts`; componenti base in `src/components/ui/`. Non usare colori letterali nei componenti.
 - Letture dal client: i venditori leggono `vehicle_public` (senza costi), non `vehicle`; i costi solo da `vehicle_stock` per i ruoli abilitati. Niente embed PostgREST su viste: letture separate.
+- Edge Functions chiamate dall'app: `callFunction()` in `src/lib/supabase.ts` (mostra l'errore del server).
 - Variabili: copiare `.env.example` in `.env`; il file `.env` non si committa.
 
 ## Comandi previsti

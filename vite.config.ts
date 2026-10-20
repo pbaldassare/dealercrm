@@ -13,8 +13,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.svg"],
       manifest: {
-        name: "Etideal CRM",
-        short_name: "Etideal",
+        name: "Dealer CRM",
+        short_name: "Dealer CRM",
         description: "Gestionale del concessionario",
         lang: "it",
         theme_color: "#1a8099",

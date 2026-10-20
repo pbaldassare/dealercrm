@@ -19,7 +19,7 @@ interface Veh { id: string; plate: string; make: string; model: string; status: 
 export function YardPage() {
   const qc = useQueryClient();
   const { profile } = useAuth();
-  const canWrite = profile && ["yard", "admin", "used_manager", "sales_manager", "reconditioning"].includes(profile.role);
+  const canWrite = profile && ["yard", "admin", "used_manager"].includes(profile.role);
   const [selected, setSelected] = useState<string | null>(null);
   const [moving, setMoving] = useState<Veh | null>(null);
 

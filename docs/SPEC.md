@@ -219,7 +219,7 @@ notification(user_id, type, payload jsonb, read_at)
 
 **Viste** (per i report e per gli schermi): `vehicle_stock` (giorni in stock, costo di ricondizionamento), `vehicle_public` (senza costi), `deal_margin` (totali per pratica e per voce, stimato e reale), `lead_open` (con tempo residuo), `salesperson_stats` (lead ricevute, appuntamenti, chiusure, tasso, tempo di risposta, margine).
 
-**Storage (bucket privati):** `vehicle-photos`, `documents`, `imports`, `call-audio`. Le foto si caricano in modo ridimensionato dal telefono.
+**Storage (bucket privati):** `dealercrm-photos`, `dealercrm-documents`, `dealercrm-imports`, `dealercrm-audio`. Le foto si caricano in modo ridimensionato dal telefono.
 
 ## 5. Logica dei lead
 
@@ -402,7 +402,7 @@ La funzione normalizza il telefono, cerca un cliente esistente per telefono o e-
 
 **Import da Excel.** I file veri arriveranno dopo: le colonne si mappano a schermo, quindi il codice non deve presupporre nomi di colonna.
 
-1. Si carica il file (`.xlsx` o `.csv`) nel bucket `imports` e si sceglie il tipo: veicoli, lead storiche, clienti, fornitori.
+1. Si carica il file (`.xlsx` o `.csv`) nel bucket `dealercrm-imports` e si sceglie il tipo: veicoli, lead storiche, clienti, fornitori.
 2. Anteprima delle prime 20 righe e mappatura di ogni colonna su un campo (si salva in `import_job.mapping` e si riusa).
 3. Validazione: targa normalizzata e valida, date e importi leggibili, campi obbligatori presenti. Le righe non valide vanno in `import_row` con il motivo.
 4. Duplicati: sulla targa per i veicoli, su telefono o e-mail per clienti e lead. Per ognuno si sceglie: salta, aggiorna, crea nuovo.
@@ -468,7 +468,7 @@ Le fasce C e D sono abilitate ai tre venditori sopra la mediana del tasso di chi
 
 Il contratto si genera dalla pratica in un clic e si salva come PDF. Il modello qui sotto è una bozza: il concessionario ha un modello suo che lo sostituirà, quindi il modello deve essere un file sostituibile (`templates/contratto-vendita.md`) con `template_version`, e il codice non deve dipendere dal testo. La bozza va fatta controllare da un legale prima dell'uso.
 
-**Generazione.** Edge Function `generate-contract(deal_id)`: legge pratica, cliente, veicolo, voci, permuta e finanziamento; riempie i segnaposto `{{...}}` del modello; produce HTML e poi PDF (scegli una libreria compatibile con le Edge Functions; se non è possibile, genera il PDF dal browser con un foglio di stile di stampa); salva nel bucket `documents`; scrive `contract` con `data` (copia dei valori usati) e `pdf_path`. Se un dato obbligatorio manca, la funzione risponde con l'elenco dei campi mancanti e non genera il PDF.
+**Generazione.** Edge Function `generate-contract(deal_id)`: legge pratica, cliente, veicolo, voci, permuta e finanziamento; riempie i segnaposto `{{...}}` del modello; produce HTML e poi PDF (scegli una libreria compatibile con le Edge Functions; se non è possibile, genera il PDF dal browser con un foglio di stile di stampa); salva nel bucket `dealercrm-documents`; scrive `contract` con `data` (copia dei valori usati) e `pdf_path`. Se un dato obbligatorio manca, la funzione risponde con l'elenco dei campi mancanti e non genera il PDF.
 
 **Segnaposto e origine**
 
@@ -570,7 +570,7 @@ Lavora una fase alla volta, in questo ordine. Ogni fase si chiude con: pull requ
 {"provider":"google","map_id":null,"map_type":"satellite","default_zoom":19,"tilt":0,"snap_radius_m":15,"stale_position_days":7,"geolocation":"browser"}
 ```
 
-Funzione `etidealcrm.yard_slot_nearest(lat, lng, radius_m)` restituisce lo stallo più vicino e la distanza in metri.
+Funzione `dealercrm.yard_slot_nearest(lat, lng, radius_m)` restituisce lo stallo più vicino e la distanza in metri.
 
 **Schermata Piazzale**
 

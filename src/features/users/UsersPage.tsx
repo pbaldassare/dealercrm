@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ROLE_LABEL, supabase, type AppRole, type Profile } from "@/lib/supabase";
+import { ROLE_LABEL, callFunction, supabase, type AppRole, type Profile } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Pill } from "@/components/ui/pill";
@@ -28,7 +28,7 @@ export function UsersPage() {
     onSuccess: () => { toast.success("Salvato"); refresh(); }, onError: err,
   });
   const fn = useMutation({
-    mutationFn: async (body: Record<string, unknown>) => { const { data, error } = await supabase.functions.invoke("manage-user", { body }); if (error) throw error; if (data?.error) throw new Error(data.error); return data; },
+    mutationFn: (body: Record<string, unknown>) => callFunction<{ temporary_password?: string | null }>("manage-user", body),
     onSuccess: (data, body) => {
       refresh();
       if (data?.temporary_password) setTempPwd({ email: String(body.email ?? users.data?.find((u) => u.id === body.user_id)?.full_name ?? ""), password: data.temporary_password });

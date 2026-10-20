@@ -34,7 +34,7 @@ export function Shell() {
         <Car className="h-5 w-5" />
       </div>
       <div className="min-w-0">
-        <div className="truncate font-display text-base font-bold leading-tight">Etideal CRM</div>
+        <div className="truncate font-display text-base font-bold leading-tight">Dealer CRM</div>
         <div className="truncate text-xs text-muted-foreground">{profile ? ROLE_LABEL[profile.role] : ""}</div>
       </div>
     </div>
@@ -60,7 +60,7 @@ export function Shell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center gap-3 border-b border-border bg-card px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] md:hidden">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary text-white"><Car className="h-4 w-4" /></div>
-          <h1 className="flex-1 truncate text-lg">{current?.label ?? "Etideal CRM"}</h1>
+          <h1 className="flex-1 truncate text-lg">{current?.label ?? "Dealer CRM"}</h1>
           <button onClick={signOut} aria-label="Esci" className="rounded-full p-2 text-muted-foreground"><LogOut className="h-5 w-5" /></button>
         </header>
         <main className="flex-1 overflow-y-auto px-4 pb-24 pt-4 md:px-8 md:pb-8 md:pt-6">
