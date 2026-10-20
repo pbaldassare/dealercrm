@@ -6,6 +6,14 @@ export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 export const fmtEur = (n: number | null | undefined) =>
   new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(n ?? 0));
 
+/** Numero scritto all'italiana (15.200 o 15.200,50) o come arriva dal database (15200.00); vuoto = null. */
+export function parseNum(s: string | null | undefined): number | null {
+  const t = (s ?? "").trim().replace(/[€\s]/g, "");
+  if (!t) return null;
+  if (t.includes(",")) return Number(t.replace(/\./g, "").replace(",", "."));
+  return Number(/^\d{1,3}(\.\d{3})+$/.test(t) ? t.replace(/\./g, "") : t);
+}
+
 export const fmtDateTime = (s: string | null | undefined) =>
   s ? new Date(s).toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" }) : "—";
 

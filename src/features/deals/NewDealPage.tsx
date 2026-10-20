@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
-import { fmtEur } from "@/lib/utils";
+import { fmtEur, parseNum } from "@/lib/utils";
 
 const sel = "h-11 w-full rounded-xl border border-input bg-card px-3 text-sm";
 
@@ -54,7 +54,7 @@ export function NewDealPage() {
       }
       if (!customerId) throw new Error("Scegli il cliente");
       const { data: v } = await supabase.from("vehicle_public").select("dealership_id").eq("id", f.vehicle_id).single();
-      const num = (s: string) => (s.trim() === "" ? null : Number(s.replace(",", ".")));
+      const num = parseNum;
       const { data, error } = await supabase.from("deal").insert({
         dealership_id: v?.dealership_id, lead_id: leadId, customer_id: customerId, vehicle_id: f.vehicle_id,
         salesperson_id: f.salesperson_id || profile?.id, status: "open", sale_price: num(f.sale_price), deposit: num(f.deposit) ?? 0,

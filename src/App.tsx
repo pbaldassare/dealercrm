@@ -18,6 +18,12 @@ import { ReportsPage } from "@/features/reports/ReportsPage";
 import { YardPage } from "@/features/yard/YardPage";
 import { UsersPage } from "@/features/users/UsersPage";
 import { ImportPage } from "@/features/import/ImportPage";
+import { NewLeadPage } from "@/features/leads/NewLeadPage";
+import { VehicleFormPage } from "@/features/vehicles/VehicleFormPage";
+import { CustomerDetailPage, CustomersPage } from "@/features/customers/CustomersPage";
+import { SupplierDetailPage, SuppliersPage } from "@/features/suppliers/SuppliersPage";
+import { ListingsPage } from "@/features/listings/ListingsPage";
+import { NotificationsPage } from "@/features/notifications/NotificationsPage";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } });
 
@@ -39,9 +45,18 @@ export default function App() {
             <Route element={<Protected />}>
               <Route index element={<TodayPage />} />
               <Route path="lead" element={<LeadsPage />} />
+              <Route path="lead/nuova" element={<NewLeadPage />} />
               <Route path="lead/:id" element={<LeadDetailPage />} />
+              <Route path="clienti" element={<CustomersPage />} />
+              <Route path="clienti/:id" element={<CustomerDetailPage />} />
               <Route path="auto" element={<VehiclesPage />} />
+              <Route path="auto/nuova" element={<VehicleFormPage />} />
               <Route path="auto/:id" element={<VehicleDetailPage />} />
+              <Route path="auto/:id/modifica" element={<VehicleFormPage />} />
+              <Route path="fornitori" element={<SuppliersPage />} />
+              <Route path="fornitori/:id" element={<SupplierDetailPage />} />
+              <Route path="annunci" element={<ListingsPage />} />
+              <Route path="notifiche" element={<NotificationsPage />} />
               <Route path="pratiche" element={<DealsPage />} />
               <Route path="pratiche/nuova" element={<NewDealPage />} />
               <Route path="pratiche/:id" element={<DealDetailPage />} />

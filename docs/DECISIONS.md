@@ -51,3 +51,10 @@ Lo schema `etidealcrm` e le sue 22 migrazioni sono stati sostituiti da `dealercr
 - **"Sono qui".** Con accuratezza peggiore di 20 m si mostra l'avviso e si chiede di toccare la mappa; altrimenti vale come tocco.
 - **Aggiornamento tra telefoni.** Dopo ogni modifica l'app manda un avviso sul canale Realtime `dealercrm-yard` (senza dati) e gli altri telefoni rileggono dal database, quindi con la RLS e il controllo del dispositivo; in più rilettura ogni 30 secondi. Le notifiche Realtime sulle tabelle non portano l'header `x-device-id` e la RLS le bloccherebbe.
 - **Sede.** L'admin salva come sede il centro attuale della mappa; senza sede la mappa si centra sugli stalli.
+
+## Backoffice
+
+- **Un solo sistema.** Telefono e computer usano la stessa app: su schermi larghi sidebar a sezioni, ricerca globale e tabelle; sul telefono barra in basso ed elenchi.
+- **Lead inserita a mano.** Il venditore la crea già "contattata" e assegnata a sé (cliente in salone o al telefono). Il responsabile la crea "qualificata" e la assegna a un venditore o con l'assegnazione automatica, così parte il timer di presa in carico.
+- **Cliente.** Si riconosce dal telefono (E.164) o dall'e-mail anche quando si inserisce a mano; i dati per contratto e fattura elettronica sono nella scheda cliente.
+- **Annunci.** Le azioni passano da `queue_listing_action` e dall'outbox; pubblicare un'auto "pronta" la porta a "pubblicata". Si pubblicano solo auto pronte, pubblicate o riservate.

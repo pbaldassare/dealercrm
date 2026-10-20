@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Pill, type Tone } from "@/components/ui/pill";
-import { fmtDate, fmtDateTime, fmtEur } from "@/lib/utils";
+import { fmtDate, fmtDateTime, fmtEur, parseNum } from "@/lib/utils";
 import { DEAL_STATUS, type DealRow } from "./DealsPage";
 
 export const ITEM_TYPE: Record<string, string> = {
@@ -67,7 +67,7 @@ export function DealDetailPage() {
   });
   const addItem = useMutation({
     mutationFn: async () => {
-      const amount = Number(newItem.amount.replace(",", "."));
+      const amount = parseNum(newItem.amount) ?? 0;
       if (!amount) throw new Error("Inserisci un importo");
       const { error } = await supabase.from("deal_item").insert({ deal_id: id, type: newItem.type, kind: COST.includes(newItem.type) ? "cost" : "revenue", estimated: Math.abs(amount), source: profile?.role ?? "app" });
       if (error) throw error;
