@@ -32,3 +32,9 @@ verify_jwt = true
 
 [functions.manage-user]
 verify_jwt = true
+
+[functions.vehicle-media]
+verify_jwt = true
+
+[functions.vision]
+verify_jwt = true

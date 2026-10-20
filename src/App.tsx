@@ -24,6 +24,8 @@ import { CustomerDetailPage, CustomersPage } from "@/features/customers/Customer
 import { SupplierDetailPage, SuppliersPage } from "@/features/suppliers/SuppliersPage";
 import { ListingsPage } from "@/features/listings/ListingsPage";
 import { NotificationsPage } from "@/features/notifications/NotificationsPage";
+import { ConditionWizardPage } from "@/features/vehicles/ConditionWizardPage";
+import { ConditionDetailPage } from "@/features/vehicles/ConditionDetailPage";
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } });
 
@@ -53,6 +55,8 @@ export default function App() {
               <Route path="auto/nuova" element={<VehicleFormPage />} />
               <Route path="auto/:id" element={<VehicleDetailPage />} />
               <Route path="auto/:id/modifica" element={<VehicleFormPage />} />
+              <Route path="auto/:id/check" element={<ConditionWizardPage />} />
+              <Route path="auto/:id/check/:cid" element={<ConditionDetailPage />} />
               <Route path="fornitori" element={<SuppliersPage />} />
               <Route path="fornitori/:id" element={<SupplierDetailPage />} />
               <Route path="annunci" element={<ListingsPage />} />

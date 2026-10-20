@@ -58,3 +58,12 @@ Lo schema `etidealcrm` e le sue 22 migrazioni sono stati sostituiti da `dealercr
 - **Lead inserita a mano.** Il venditore la crea già "contattata" e assegnata a sé (cliente in salone o al telefono). Il responsabile la crea "qualificata" e la assegna a un venditore o con l'assegnazione automatica, così parte il timer di presa in carico.
 - **Cliente.** Si riconosce dal telefono (E.164) o dall'e-mail anche quando si inserisce a mano; i dati per contratto e fattura elettronica sono nella scheda cliente.
 - **Annunci.** Le azioni passano da `queue_listing_action` e dall'outbox; pubblicare un'auto "pronta" la porta a "pubblicata". Si pubblicano solo auto pronte, pubblicate o riservate.
+
+## Veicoli (fase 2)
+
+- **Foto.** Si riducono sul telefono (lato lungo 1600 px, JPEG) e si caricano con un link firmato chiesto a `vehicle-media`, che controlla utente, ruolo e dispositivo; si mostrano con link firmati di un'ora. Così non dipendiamo dal passaggio dell'header `x-device-id` allo Storage. Senza rete restano in una coda nel telefono (IndexedDB) e partono al ritorno della connessione o alla prossima apertura dell'app.
+- **Check.** A passi: fase e cruscotto, chiavi/documenti/spie, pneumatici, danni, foto, riepilogo. Le 10 foto obbligatorie valgono per ingresso e consegna; durante la lavorazione sono facoltative. Ogni danno nuovo ha la sua foto. I danni ancora aperti del check precedente si ripropongono per segnare le riparazioni.
+- **Confronto.** Con il check precedente (non per fase), sugli stessi criteri di `compare_conditions`: danni nuovi, riparati, carburante, km oltre 50.
+- **IA sulle foto.** `vision` usa Claude (`claude-opus-5-5`, risposta JSON a schema fisso, ripiego automatico su un altro modello se la richiesta viene rifiutata). Legge il cruscotto come proposta da controllare e confronta le foto di due check; il risultato si salva in `vehicle_condition.ai_review`. Senza chiave si usa un confronto di prova sui dati inseriti.
+- **Lavorazioni.** Il ricondizionamento le inserisce e le chiude con `save_vehicle_work` e può indicare il costo, ma non lo rilegge: legge dalla vista `vehicle_work_list`, che mostra il costo solo ai ruoli dei costi.
+- **Allerte.** Calcolate al momento dalla vista `vehicle_alert` con le soglie di `setting.vehicle_alerts`; per "in arrivo oltre la data" c'è il nuovo campo `vehicle.expected_arrival`.

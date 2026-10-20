@@ -13,7 +13,7 @@ const sel = "h-11 w-full rounded-xl border border-input bg-card px-3 text-sm";
 const EMPTY = {
   plate: "", vin: "", make: "", model: "", trim: "", kind: "used", body_type: "", first_registration: "", mileage_km: "", fuel_type: "",
   gearbox: "", power_kw: "", color: "", emission_class: "", previous_owners: "", supplier_id: "", purchase_cost: "", list_price: "",
-  sale_price: "", entry_date: new Date().toISOString().slice(0, 10), notes: "", status: "received",
+  sale_price: "", entry_date: new Date().toISOString().slice(0, 10), expected_arrival: "", notes: "", status: "received",
 };
 type Form = typeof EMPTY;
 const num = parseNum;
@@ -57,7 +57,7 @@ export function VehicleFormPage() {
         body_type: f.body_type || null, first_registration: f.first_registration || null, mileage_km: num(f.mileage_km), fuel_type: f.fuel_type || null,
         gearbox: f.gearbox || null, power_kw: num(f.power_kw), color: f.color.trim() || null, emission_class: f.emission_class.trim() || null,
         previous_owners: num(f.previous_owners), supplier_id: f.supplier_id || null, purchase_cost: num(f.purchase_cost), list_price: num(f.list_price),
-        sale_price: num(f.sale_price), entry_date: f.entry_date || null, notes: f.notes.trim() || null,
+        sale_price: num(f.sale_price), entry_date: f.entry_date || null, expected_arrival: f.expected_arrival || null, notes: f.notes.trim() || null,
       };
       if (editing) {
         const { error } = await supabase.from("vehicle").update(row).eq("id", id!);
@@ -116,7 +116,8 @@ export function VehicleFormPage() {
             {field("entry_date", "Data ingresso", { type: "date" })}
             {field("list_price", "Prezzo listino", { inputMode: "decimal", placeholder: "€" })}
             {field("sale_price", "Prezzo vendita", { inputMode: "decimal", placeholder: "€" })}
-            {!editing && <div className="col-span-2"><Label htmlFor="st">Stato iniziale</Label><select id="st" className={sel} value={f.status} onChange={(e) => set("status", e.target.value)}><option value="incoming">In arrivo</option><option value="received">Ricevuta</option></select></div>}
+            {!editing && <div><Label htmlFor="st">Stato iniziale</Label><select id="st" className={sel} value={f.status} onChange={(e) => set("status", e.target.value)}><option value="incoming">In arrivo</option><option value="received">Ricevuta</option></select></div>}
+            {(f.status === "incoming" || f.expected_arrival) && field("expected_arrival", "Arrivo previsto", { type: "date" })}
             <div className="col-span-2">{field("notes", "Note")}</div>
           </div>
           <Button type="submit" className="w-full" disabled={save.isPending}>{save.isPending ? "Salvo…" : editing ? "Salva modifiche" : "Inserisci auto"}</Button>

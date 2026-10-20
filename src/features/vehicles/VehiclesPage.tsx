@@ -7,7 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { DataTable, type Column } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { Pill, type Tone } from "@/components/ui/pill";
-import { fmtDate, fmtDateTime, fmtEur } from "@/lib/utils";
+import { fmtDate, fmtDateTime, fmtEur, parseNum } from "@/lib/utils";
+import { FUEL, PHASE, WORK, WORK_STATUS } from "./conditions";
+import { AlertTriangle } from "lucide-react";
 
 export const VSTATUS: Record<string, [string, Tone]> = {
   incoming: ["In arrivo", "muted"], received: ["Ricevuta", "info"], reconditioning: ["In lavorazione", "warn"], ready: ["Pronta", "info"],
@@ -23,9 +25,10 @@ export const WORD: Record<string, string> = {
 const w = (k: string | null | undefined) => (k ? WORD[k] ?? k : "—");
 const COST_ROLES = ["admin", "owner", "sales_manager", "used_manager", "accounting", "finance_insurance"];
 const IN_STOCK = (s: string) => !["sold", "delivered", "withdrawn"].includes(s);
-const WORK: Record<string, string> = { bodywork: "Carrozzeria", mechanical: "Meccanica", cleaning: "Pulizia", documents: "Documenti" };
-const WORK_STATUS: Record<string, string> = { planned: "Prevista", in_progress: "In corso", done: "Fatta" };
 const LISTING: Record<string, [string, Tone]> = { to_publish: ["Da pubblicare", "muted"], publishing: ["In pubblicazione", "info"], published: ["Pubblicato", "ok"], error: ["Errore", "bad"], withdrawn: ["Ritirato", "muted"], suspended: ["Sospeso", "warn"] };
+
+interface WorkRow { id: string; kind: string; status: string; cost: number | null; started_at: string | null; ended_at: string | null; notes: string | null }
+interface WorkDraft { id: string | null; kind: string; status: string; cost: string; notes: string }
 
 interface VehicleRow {
   id: string; plate: string; make: string; model: string; trim: string | null; first_registration: string | null; mileage_km: number | null;
@@ -42,6 +45,12 @@ export function VehiclesPage() {
   const canCost = !!profile && COST_ROLES.includes(profile.role);
   const canWrite = profile?.role === "admin" || profile?.role === "used_manager";
 
+  const alerts = useQuery({
+    queryKey: ["vehicle_alert"],
+    queryFn: async () => (await supabase.from("vehicle_alert").select("vehicle_id,code,severity,message,days")).data ?? [],
+  });
+  const alertsBy = new Map<string, Array<{ message: string; severity: string }>>();
+  (alerts.data ?? []).forEach((a) => alertsBy.set(a.vehicle_id, [...(alertsBy.get(a.vehicle_id) ?? []), a]));
   const list = useQuery({
     queryKey: ["vehicle_public", canCost],
     queryFn: async () => {
@@ -71,6 +80,7 @@ export function VehiclesPage() {
     { key: "status", header: "Stato", cell: (v) => { const [l, t] = VSTATUS[v.status] ?? [v.status, "muted" as Tone]; return <Pill tone={t}>{l}</Pill>; }, value: (v) => VSTATUS[v.status]?.[0] ?? v.status },
     { key: "days", header: "Giorni", cell: (v) => <span className={Number(v.days_in_stock) > 60 && IN_STOCK(v.status) ? "font-bold text-warning-ink" : ""}>{v.days_in_stock ?? 0}</span>, value: (v) => v.days_in_stock, className: "text-right" },
     { key: "yard", header: "Posizione", cell: (v) => w(v.yard_status), value: (v) => w(v.yard_status) },
+    { key: "alerts", header: "Allerte", cell: (v) => { const a = alertsBy.get(v.id); return a ? <span title={a.map((x) => x.message).join("\n")} className={a.some((x) => x.severity === "bad") ? "inline-flex items-center gap-1 font-bold text-destructive-ink" : "inline-flex items-center gap-1 font-bold text-warning-ink"}><AlertTriangle className="h-4 w-4" />{a.length}</span> : null; }, value: (v) => alertsBy.get(v.id)?.length ?? 0 },
   ];
 
   return (
@@ -89,6 +99,7 @@ export function VehiclesPage() {
           { key: "published", label: "Pubblicate", test: (v) => v.status === "published" },
           { key: "prep", label: "In preparazione", test: (v) => ["incoming", "received", "reconditioning", "ready"].includes(v.status) },
           { key: "reserved", label: "Riservate", test: (v) => v.status === "reserved" },
+          { key: "alerts", label: "Con allerte", test: (v) => alertsBy.has(v.id) },
           { key: "stale60", label: "Oltre 60 giorni", test: (v) => IN_STOCK(v.status) && Number(v.days_in_stock) > 60 },
           { key: "sold", label: "Vendute", test: (v) => ["sold", "delivering", "delivered"].includes(v.status) },
         ]}
@@ -120,7 +131,10 @@ export function VehicleDetailPage() {
   const { profile } = useAuth();
   const canCost = !!profile && COST_ROLES.includes(profile.role);
   const canWrite = profile?.role === "admin" || profile?.role === "used_manager";
+  const canCheck = !!profile && ["admin", "used_manager", "reconditioning", "yard"].includes(profile.role);
+  const canWork = !!profile && ["admin", "used_manager", "reconditioning"].includes(profile.role);
   const [nextStatus, setNextStatus] = useState("");
+  const [work, setWork] = useState<WorkDraft | null>(null);
 
   const v = useQuery({
     queryKey: ["vehicle", id],
@@ -131,12 +145,16 @@ export function VehicleDetailPage() {
         data.supplier_id ? supabase.from("supplier").select("id,name").eq("id", data.supplier_id).maybeSingle() : null,
         supabase.from("vehicle_event").select("*").eq("vehicle_id", id!).order("at", { ascending: false }),
         canCost ? supabase.from("vehicle_stock").select("purchase_cost,reconditioning_cost").eq("id", id!).maybeSingle() : null,
-        supabase.from("vehicle_work").select("id,kind,status,cost,started_at,ended_at,notes").eq("vehicle_id", id!).order("created_at"),
+        supabase.from("vehicle_work_list").select("id,kind,status,cost,started_at,ended_at,notes").eq("vehicle_id", id!).order("created_at"),
         supabase.from("listing").select("id,portal,status,external_id,last_synced_at,last_error").eq("vehicle_id", id!).order("portal"),
+      ]);
+      const [conds, alerts] = await Promise.all([
+        supabase.from("vehicle_condition").select("id,phase,taken_at,mileage_km,fuel_level,ai_review").eq("vehicle_id", id!).order("taken_at", { ascending: false }),
+        supabase.from("vehicle_alert").select("code,severity,message,days").eq("vehicle_id", id!),
       ]);
       return {
         ...(data as VehicleRow), supplier: sup?.data ?? null, events: ev.data ?? [], stock: stock?.data ?? null,
-        works: works.data ?? [], listings: listings.data ?? [],
+        works: (works.data ?? []) as WorkRow[], listings: listings.data ?? [], conditions: conds.data ?? [], alerts: alerts.data ?? [],
       };
     },
   });
@@ -146,6 +164,15 @@ export function VehicleDetailPage() {
       if (error) throw error;
     },
     onSuccess: (_d, to) => { toast.success(`Stato → ${VSTATUS[to][0]}`); setNextStatus(""); qc.invalidateQueries({ queryKey: ["vehicle"] }); qc.invalidateQueries({ queryKey: ["vehicle_public"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const saveWork = useMutation({
+    mutationFn: async (w: WorkDraft) => {
+      const { error } = await supabase.rpc("save_vehicle_work", { _id: w.id, _vehicle_id: id, _kind: w.kind, _status: w.status, _cost: parseNum(w.cost), _notes: w.notes });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Lavorazione salvata"); setWork(null); qc.invalidateQueries({ queryKey: ["vehicle"] }); qc.invalidateQueries({ queryKey: ["vehicle_stock"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -167,6 +194,11 @@ export function VehicleDetailPage() {
           {canWrite && <Link to={`/auto/${d.id}/modifica`}><Button size="sm" variant="outline">Modifica</Button></Link>}
         </div>
       </div>
+      {d.alerts.length > 0 && (
+        <div className="card flex flex-col gap-1.5 border-warning p-4 text-sm">
+          {d.alerts.map((a) => <div key={a.code} className={a.severity === "bad" ? "font-bold text-destructive-ink" : "font-semibold text-warning-ink"}><AlertTriangle className="mr-1.5 inline h-4 w-4" />{a.message}{a.days != null ? ` (${a.days} gg)` : ""}</div>)}
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-2">
         <section className="card p-4"><h3 className="text-base">Scheda</h3>
           <dl className="mt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm">
@@ -206,15 +238,47 @@ export function VehicleDetailPage() {
             {d.events.length === 0 && <li className="text-muted-foreground">Nessun evento registrato.</li>}
           </ul>
         </section>
-        <section className="card p-4"><h3 className="text-base">Lavorazioni</h3>
+        <section className="card p-4">
+          <div className="flex items-center justify-between gap-2"><h3 className="text-base">Check delle condizioni</h3>
+            {canCheck && <Link to={`/auto/${d.id}/check`}><Button size="sm">Nuovo check</Button></Link>}</div>
           <ul className="mt-2 text-sm">
-            {d.works.map((x: { id: string; kind: string; status: string; cost: number | null; started_at: string | null; notes: string | null }) => (
-              <li key={x.id} className="flex justify-between gap-2 border-t border-border py-2 first:border-t-0">
-                <span><b>{WORK[x.kind] ?? x.kind}</b> · {WORK_STATUS[x.status] ?? x.status}{x.notes ? ` · ${x.notes}` : ""}</span>
-                <span className="text-muted-foreground">{canCost && x.cost != null ? fmtEur(x.cost) : fmtDate(x.started_at)}</span>
+            {d.conditions.map((c: { id: string; phase: string; taken_at: string; mileage_km: number | null; fuel_level: string | null; ai_review: unknown }) => (
+              <li key={c.id} className="border-t border-border py-2 first:border-t-0">
+                <Link to={`/auto/${d.id}/check/${c.id}`} className="flex items-center justify-between gap-2 hover:text-primary">
+                  <span><b>{PHASE[c.phase] ?? c.phase}</b> · {fmtDateTime(c.taken_at)} · {c.mileage_km?.toLocaleString("it-IT") ?? "—"} km · {c.fuel_level ? FUEL[c.fuel_level] : "—"}</span>
+                  {c.ai_review ? <Pill tone="info">revisione IA</Pill> : null}
+                </Link>
               </li>
             ))}
-            {d.works.length === 0 && <li className="text-muted-foreground">Nessuna lavorazione.</li>}
+            {d.conditions.length === 0 && <li className="text-muted-foreground">Nessun check{["received", "reconditioning"].includes(d.status) ? ": il check di ingresso va fatto entro 24 ore" : ""}.</li>}
+          </ul>
+        </section>
+        <section className="card p-4">
+          <div className="flex items-center justify-between gap-2"><h3 className="text-base">Lavorazioni</h3>
+            {canWork && !work && <Button size="sm" variant="outline" onClick={() => setWork({ id: null, kind: "bodywork", status: "planned", cost: "", notes: "" })}>+ Lavorazione</Button>}</div>
+          {work && (
+            <form className="mt-3 space-y-2 rounded-xl border border-border p-3" onSubmit={(e) => { e.preventDefault(); saveWork.mutate(work); }}>
+              <div className="grid grid-cols-2 gap-2">
+                <select aria-label="Tipo" value={work.kind} onChange={(e) => setWork({ ...work, kind: e.target.value })} className="h-10 rounded-lg border border-input bg-card px-2 text-sm">{Object.entries(WORK).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+                <select aria-label="Stato" value={work.status} onChange={(e) => setWork({ ...work, status: e.target.value })} className="h-10 rounded-lg border border-input bg-card px-2 text-sm">{Object.entries(WORK_STATUS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+                <input aria-label="Costo" placeholder={work.id && !canCost ? "costo (lascia vuoto per non cambiarlo)" : "costo €"} inputMode="decimal" value={work.cost} onChange={(e) => setWork({ ...work, cost: e.target.value })} className="h-10 rounded-lg border border-input bg-card px-2 text-sm" />
+                <input aria-label="Note" placeholder="note" value={work.notes} onChange={(e) => setWork({ ...work, notes: e.target.value })} className="h-10 rounded-lg border border-input bg-card px-2 text-sm" />
+              </div>
+              <div className="flex gap-2"><Button size="sm" type="submit" disabled={saveWork.isPending}>Salva</Button><Button size="sm" variant="ghost" type="button" onClick={() => setWork(null)}>Annulla</Button></div>
+            </form>
+          )}
+          <ul className="mt-2 text-sm">
+            {d.works.map((x) => (
+              <li key={x.id} className="flex items-center justify-between gap-2 border-t border-border py-2 first:border-t-0">
+                <span><b>{WORK[x.kind] ?? x.kind}</b> · {WORK_STATUS[x.status] ?? x.status}{x.notes ? ` · ${x.notes}` : ""}<span className="block text-xs text-muted-foreground">{x.started_at ? `dal ${fmtDate(x.started_at)}` : "da iniziare"}{x.ended_at ? ` al ${fmtDate(x.ended_at)}` : ""}</span></span>
+                <span className="flex items-center gap-2">
+                  {canCost && x.cost != null && <span className="text-muted-foreground">{fmtEur(x.cost)}</span>}
+                  {canWork && x.status !== "done" && <Button size="sm" variant="ghost" onClick={() => saveWork.mutate({ id: x.id, kind: x.kind, status: x.status === "planned" ? "in_progress" : "done", cost: "", notes: x.notes ?? "" })} disabled={saveWork.isPending}>{x.status === "planned" ? "Inizia" : "Fatta"}</Button>}
+                  {canWork && <Button size="sm" variant="ghost" onClick={() => setWork({ id: x.id, kind: x.kind, status: x.status, cost: canCost && x.cost != null ? String(x.cost) : "", notes: x.notes ?? "" })}>Modifica</Button>}
+                </span>
+              </li>
+            ))}
+            {d.works.length === 0 && !work && <li className="text-muted-foreground">Nessuna lavorazione.</li>}
           </ul>
         </section>
         <section className="card p-4"><h3 className="text-base">Annunci</h3>
@@ -232,7 +296,6 @@ export function VehicleDetailPage() {
           </ul>
         </section>
       </div>
-      <p className="text-xs text-muted-foreground">Foto e check delle condizioni arrivano con la fase 2.</p>
     </>
   );
 }

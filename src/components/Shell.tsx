@@ -9,6 +9,7 @@ import { ROLE_LABEL, type AppRole } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { useNotifications } from "@/features/notifications/notifications";
+import { flushQueue } from "@/lib/photos";
 import { cn } from "@/lib/utils";
 
 interface Item { to: string; label: string; icon: LucideIcon; roles?: AppRole[] }
@@ -16,7 +17,7 @@ interface Item { to: string; label: string; icon: LucideIcon; roles?: AppRole[] 
 // Menu per sezione e per ruolo (sezioni 3 e 8 della specifica)
 const SECTIONS: Array<{ title: string; items: Item[] }> = [
   { title: "Vendite", items: [
-    { to: "/", label: "Oggi", icon: Clock, roles: ["admin", "owner", "sales_manager", "salesperson"] },
+    { to: "/", label: "Oggi", icon: Clock, roles: ["admin", "owner", "sales_manager", "salesperson", "used_manager", "reconditioning", "yard", "marketing"] },
     { to: "/lead", label: "Lead", icon: Users, roles: ["admin", "owner", "sales_manager", "salesperson", "accounting", "finance_insurance", "used_manager", "marketing"] },
     { to: "/clienti", label: "Clienti", icon: Contact, roles: ["admin", "owner", "sales_manager", "salesperson", "accounting", "finance_insurance", "used_manager"] },
     { to: "/pratiche", label: "Pratiche", icon: FileText, roles: ["admin", "owner", "sales_manager", "salesperson", "accounting", "finance_insurance", "used_manager"] },
@@ -54,6 +55,8 @@ export function Shell() {
 
   useEffect(() => { try { localStorage.setItem(COLLAPSE_KEY, collapsed ? "1" : "0"); } catch { /* storage bloccato */ } }, [collapsed]);
   useEffect(() => { setSearching(false); }, [pathname]);
+  // foto rimaste in coda da una sessione senza rete: si inviano appena l'utente è dentro
+  useEffect(() => { void flushQueue(); }, []);
 
   const bell = (
     <Link to="/notifiche" aria-label={`Notifiche${unread.length ? `, ${unread.length} da leggere` : ""}`} className="relative rounded-full p-2 text-muted-foreground hover:bg-secondary">

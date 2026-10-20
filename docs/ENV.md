@@ -20,6 +20,7 @@
 | `FIC_REDIRECT_URI` | `fic-oauth`: `https://moyfkdwsghidkcifesrg.supabase.co/functions/v1/fic-oauth?action=callback`, identico a quello registrato nell'app | manca |
 | `FIC_STATE_SECRET` | `fic-oauth`: firma dello state OAuth (una stringa casuale lunga) | manca |
 | `FIC_WEBHOOK_PUBLIC_KEY_B64` | `fic-webhook`: chiave pubblica PEM in Base64 pubblicata su developers.fattureincloud.it/docs/webhooks/notifications. **Senza chiave il webhook rifiuta gli eventi** | manca |
+| `ANTHROPIC_API_KEY` | `vision`: legge km e carburante dalla foto del cruscotto e confronta le foto di due check (modello `claude-opus-5-5`). Senza chiave la funzione usa un confronto di prova sui soli dati inseriti | da impostare |
 | `GOOGLE_MAPS_SERVER_KEY` | geocoding lato server (opzionale), chiave limitata per IP | opzionale |
 | `AUTOSCOUT24_API_USER`, `AUTOSCOUT24_API_PASSWORD` | adattatore AutoScout24 | mancano |
 | `GHL_API_KEY`, `GHL_LOCATION_ID` | GoHighLevel (WhatsApp, voce, social) | mancano |
