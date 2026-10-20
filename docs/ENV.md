@@ -6,8 +6,8 @@
 | --- | --- | --- |
 | `VITE_SUPABASE_URL` | `https://moyfkdwsghidkcifesrg.supabase.co` | nota |
 | `VITE_SUPABASE_ANON_KEY` | chiave pubblica del progetto (da sola non dà accesso a nessun dato: servono login e dispositivo approvato) | da copiare dalla dashboard Supabase |
-| `VITE_GOOGLE_MAPS_API_KEY` | mappa del piazzale (Maps JavaScript API). Chiave limitata per referrer HTTP e alla sola Maps JavaScript API | da creare |
-| `VITE_GOOGLE_MAPS_MAP_ID` | Map ID per gli Advanced Markers (anche in `setting.maps.map_id`) | da creare |
+| `VITE_GOOGLE_MAPS_API_KEY` | mappa del piazzale (Maps JavaScript API). Chiave limitata per referrer HTTP (`pbaldassare.github.io/*`, `localhost:8080/*`) e alla sola Maps JavaScript API. Per GitHub Pages va nella variabile del repository con lo stesso nome | creata, da limitare |
+| `VITE_GOOGLE_MAPS_MAP_ID` | Map ID per gli Advanced Markers (anche in `setting.maps.map_id`). Senza, si usa `DEMO_MAP_ID` di prova | da creare per la produzione |
 
 ## Edge Functions (segreti Supabase: `supabase secrets set NOME=valore`)
 

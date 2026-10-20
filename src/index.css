@@ -84,4 +84,15 @@
   }
   .nav-pill:hover { @apply bg-secondary text-foreground; }
   .nav-pill.active { @apply bg-primary text-primary-foreground shadow-glow; }
+
+  /* Segnaposto degli stalli sulla mappa del piazzale (Advanced Markers) */
+  .yard-pin {
+    @apply cursor-pointer whitespace-nowrap rounded-full border-2 border-card px-1.5 py-0.5 font-sans text-[10px] font-bold leading-none shadow-card transition-transform;
+  }
+  .yard-pin--free { @apply bg-success text-success-foreground; }
+  .yard-pin--occupied { @apply bg-primary px-2 py-1 text-[11px] text-primary-foreground; }
+  .yard-pin--workshop { @apply bg-warning px-2 py-1 text-[11px] text-warning-foreground; }
+  .yard-pin--stale { @apply bg-destructive px-2 py-1 text-[11px] text-destructive-foreground; }
+  .yard-pin--selected { @apply scale-125 ring-4 ring-primary/40; }
+  .yard-me { @apply h-4 w-4 rounded-full border-[3px] border-card bg-info shadow-card; }
 }

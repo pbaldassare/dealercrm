@@ -40,3 +40,14 @@ Lo schema `etidealcrm` e le sue 22 migrazioni sono stati sostituiti da `dealercr
 
 - Il contratto è per ora una bozza HTML stampabile con i dati principali, nel bucket `dealercrm-documents`; il PDF e il modello definitivo arrivano con la fase 4.
 - La fattura si invia direttamente da `fic-invoice` (dal pulsante o alla consegna): l'outbox resta per i soli portali. In modalità prova, o con parametri mancanti, si verificano solo i totali.
+
+## Piazzale su Google Maps (fase 5)
+
+- **Map ID.** Si usa `VITE_GOOGLE_MAPS_MAP_ID`, poi `setting.maps.map_id`, altrimenti `DEMO_MAP_ID` (quello di prova di Google, segnalato a schermo). Così la mappa funziona appena c'è la chiave; il Map ID vero si crea in Cloud Console quando si va in produzione.
+- **Disegno degli stalli.** Invece del tocco lungo, un pulsante "Disegna stalli" (ruoli piazzale e admin): in quella modalità un tocco aggiunge uno stallo e i segnaposto si trascinano. Sul telefono il tocco lungo si confonde con lo spostamento della mappa.
+- **Zona del nuovo stallo.** Quella dello stallo più vicino, oppure quella scelta a schermo; codice progressivo nella zona (`A-21`).
+- **Stallo occupato.** Non si mette un'auto in uno stallo già occupato da un'altra: prima si sposta quella.
+- **Tocco lontano dagli stalli.** Oltre `snap_radius_m` il piazzale o l'admin possono creare lì uno stallo nuovo e metterci l'auto; gli altri ruoli devono toccare uno stallo.
+- **"Sono qui".** Con accuratezza peggiore di 20 m si mostra l'avviso e si chiede di toccare la mappa; altrimenti vale come tocco.
+- **Aggiornamento tra telefoni.** Dopo ogni modifica l'app manda un avviso sul canale Realtime `dealercrm-yard` (senza dati) e gli altri telefoni rileggono dal database, quindi con la RLS e il controllo del dispositivo; in più rilettura ogni 30 secondi. Le notifiche Realtime sulle tabelle non portano l'header `x-device-id` e la RLS le bloccherebbe.
+- **Sede.** L'admin salva come sede il centro attuale della mappa; senza sede la mappa si centra sugli stalli.

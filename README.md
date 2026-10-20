@@ -32,4 +32,4 @@ npm run dev            # http://localhost:8080
 
 ## Stato
 
-Backend, sicurezza e dati demo pronti. App React: accessi e dispositivi, Oggi, Lead, Auto, Pratiche, Report, Import Excel, Utenti, Piazzale a griglia, Parametri. Da fare: foto e check condizioni, appuntamenti e notifiche in app, mappa Google, contratto in PDF, collegamenti veri.
+Backend, sicurezza e dati demo pronti. App React: accessi e dispositivi, Oggi, Lead, Auto, Pratiche, Report, Import Excel, Utenti, Piazzale su mappa satellitare (o griglia), Parametri. Da fare: foto e check condizioni, appuntamenti e notifiche in app, contratto in PDF, collegamenti veri.
