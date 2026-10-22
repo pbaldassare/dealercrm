@@ -29,11 +29,11 @@ The spec lists some columns as parenthetical unions. They are Postgres enums:
 
 ## Device binding off (2026-10-22)
 
-Paolo: authorized devices are not needed today. Binding stays off until Paolo turns it back on. The `device` table, enum, and Dispositivi page stay but are not a login or RLS gate. Do not drop `device`.
+Paolo: authorized devices are not needed today. Binding stays off until Paolo turns it back on. Keep the `device` table and enum. Do not drop `device`.
 
 - Repo schema name remains `etidealcrm`. `is_device_authorized()` is `is_active_user()` only.
 - Live project `moyfkdwsghidkcifesrg` currently stores dealer data in `dealercrm` (`drop_etidealcrm` 2026-10-20). There, `my_role()` / `my_dealership()` call `device_ok()`. `device_ok()` now returns true for an active profile. `dealercrm.is_device_authorized()` is the same alias.
-- App: no “In attesa di approvazione”; no device insert on login; Dispositivi is hidden from nav and inert if opened.
+- App: no login gate, no pending screen, no Dispositivi nav or route, no client install-id header. `/dispositivi` falls through to Oggi.
 
 Turn the check back on with a new migration when Paolo asks.
 

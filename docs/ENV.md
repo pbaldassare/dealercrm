@@ -23,7 +23,7 @@ Copy `.env.example` to `.env.local` for Vite.
 ## Demo login
 
 - `admin.demo@demo.test` and other §9 roles (`venditore.01@demo.test`, …)
-- Device approval is off: after login the app opens without “In attesa di approvazione”
+- After login the app opens on Oggi. There is no device-approval step.
 
 ## Phase 7 — real connectors
 

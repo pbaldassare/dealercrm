@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { LoginPage } from './features/auth/LoginPage'
-import { DevicesPage } from './features/devices/DevicesPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { AppShell } from './features/shell/AppShell'
 import { TodayPage } from './features/today/TodayPage'
@@ -67,7 +66,6 @@ function Gate() {
         <Route path="/fornitori" element={<SuppliersPage />} />
         <Route path="/import" element={<ImportPage />} />
         <Route path="/parametri" element={<SettingsPage />} />
-        <Route path="/dispositivi" element={<DevicesPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/oggi" replace />} />
     </Routes>

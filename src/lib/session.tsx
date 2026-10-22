@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './supabase'
-import type { Device, Profile } from './types'
+import type { Profile } from './types'
 
 type SessionState = {
   session: Session | null
   profile: Profile | null
-  device: Device | null
   loading: boolean
   error: string | null
   refresh: () => Promise<void>
@@ -18,7 +17,6 @@ const SessionContext = createContext<SessionState | null>(null)
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [device, setDevice] = useState<Device | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,7 +25,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setError(null)
     if (!next) {
       setProfile(null)
-      setDevice(null)
       setLoading(false)
       return
     }
@@ -40,7 +37,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       return
     }
     setProfile(profileRes.data as Profile | null)
-    setDevice(null)
     setLoading(false)
   }
 
@@ -56,7 +52,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     () => ({
       session,
       profile,
-      device,
       loading,
       error,
       refresh: async () => {
@@ -67,7 +62,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         await supabase.auth.signOut()
       },
     }),
-    [session, profile, device, loading, error],
+    [session, profile, loading, error],
   )
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>

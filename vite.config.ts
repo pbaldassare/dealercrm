@@ -10,6 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: { cleanupOutdatedCaches: true },
       includeAssets: ['favicon.svg', 'apple-touch-icon.svg'],
       manifest: {
         name: 'EtiDeal gestionale',

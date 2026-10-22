@@ -13,7 +13,7 @@ npm run dev -- --host --port 43123
 
 Interfaccia in italiano. Nomi di tabelle e colonne in inglese. Nessuna chiave `service_role` nel browser.
 
-Accesso demo: `admin.demo@demo.test` / password in `docs/ENV.md`. Gli altri account sono `*@demo.test` (Auth condivisa: non usare altre caselle). Il vincolo sui dispositivi autorizzati è spento: dopo il login si entra senza schermata di approvazione.
+Accesso demo: `admin.demo@demo.test` / password in `docs/ENV.md`. Gli altri account sono `*@demo.test` (Auth condivisa: non usare altre caselle).
 
 ## Database
 

@@ -20,14 +20,6 @@ export type Profile = {
   enabled_bands?: string[]
 }
 
-export type Device = {
-  id: string
-  user_id: string
-  install_id: string
-  name: string | null
-  status: 'pending' | 'authorized' | 'revoked'
-}
-
 export type Setting = {
   id: string
   dealership_id: string

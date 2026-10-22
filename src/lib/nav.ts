@@ -16,7 +16,7 @@ const ALL: NavItem[] = [
 ]
 
 const BY_ROLE: Record<AppRole, string[]> = {
-  admin: ALL.map((i) => i.to), // Dispositivi hidden while device binding is off
+  admin: ALL.map((i) => i.to),
   owner: ['/oggi', '/lead', '/auto', '/pratiche', '/piazzale', '/report', '/parametri'],
   sales_manager: ['/oggi', '/lead', '/auto', '/pratiche', '/piazzale', '/report', '/parametri'],
   salesperson: ['/oggi', '/lead', '/auto', '/pratiche', '/piazzale', '/report'],
