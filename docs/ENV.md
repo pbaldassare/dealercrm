@@ -5,9 +5,11 @@
 | Variabile | Uso | Stato |
 | --- | --- | --- |
 | `VITE_SUPABASE_URL` | `https://moyfkdwsghidkcifesrg.supabase.co` | nota |
-| `VITE_SUPABASE_ANON_KEY` | chiave pubblica del progetto (da sola non dà accesso a nessun dato: servono login e RLS) | da copiare dalla dashboard Supabase |
+| `VITE_SUPABASE_ANON_KEY` | chiave pubblica del progetto (da sola non dà accesso a nessun dato: servono login e RLS) | in `.env.production` e fallback nel client per Cloudflare Pages |
 | `VITE_GOOGLE_MAPS_API_KEY` | mappa del piazzale (Maps JavaScript API). Chiave limitata per referrer HTTP (`pbaldassare.github.io/*`, `localhost:8080/*`) e alla sola Maps JavaScript API. Per GitHub Pages va nella variabile del repository con lo stesso nome | creata, da limitare |
 | `VITE_GOOGLE_MAPS_MAP_ID` | Map ID per gli Advanced Markers (anche in `setting.maps.map_id`). Senza, si usa `DEMO_MAP_ID` di prova | da creare per la produzione |
+
+La build di produzione (`vite build`, Cloudflare Pages) legge `.env.production`. Schema PostgREST: `dealercrm`. Origine `https://dealercrm.pages.dev`. Mai `service_role` nel browser.
 
 ## Edge Functions (segreti Supabase: `supabase secrets set NOME=valore`)
 
@@ -38,4 +40,4 @@ curl -X POST https://moyfkdwsghidkcifesrg.supabase.co/functions/v1/lead-inbound 
 
 La migrazione `20261020120100_dealercrm_demo.sql` crea gli utenti demo in Supabase Auth solo se mancano e solo se è impostata la password:
 prima di applicarla in un ambiente nuovo eseguire `SET app.demo_password = '<password>';` nella stessa sessione.
-Gli utenti demo esistenti sul progetto hanno una password nota: cambiarla o disattivarli prima di dare accesso a persone esterne.
+Gli utenti demo esistenti sul progetto hanno una password nota: cambiarla o disattivarli prima di dare accesso a persone esterne. I conti `@demo.test` devono avere `auth.users.instance_id` valorizzato, altrimenti GoTrue risponde `invalid_credentials`.

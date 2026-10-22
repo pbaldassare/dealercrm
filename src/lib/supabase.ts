@@ -1,12 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+/** Chiave publishable (già in `.github/workflows/pages.yml`): pubblica, protetta da login e RLS. */
+const DEFAULT_URL = "https://moyfkdwsghidkcifesrg.supabase.co";
+const DEFAULT_ANON = "sb_publishable_q23OIkc-TZN0xlf5aX0mBg_9-RJK71d";
+
+const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || DEFAULT_URL;
+const key = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || DEFAULT_ANON;
 
 export const supabaseConfigured = Boolean(url && key);
 
 /** Client unico sullo schema dealercrm. Il vincolo x-device-id è spento. */
-export const supabase = createClient(url ?? "https://example.invalid", key ?? "anon", {
+export const supabase = createClient(url, key, {
   db: { schema: "dealercrm" },
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
