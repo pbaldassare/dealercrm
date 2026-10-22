@@ -1,82 +1,73 @@
-# Decisions
+# Decisioni
 
-Defaults chosen where the spec was silent or later instructions overrode it. Update this file in the same PR as the change.
+Scelte prese dove la specifica lasciava spazio o dove c'era un conflitto. Ogni voce: cosa si è deciso e perché.
 
-## Vehicle kind (2026-10-19)
+## 2026-10-22 — Nome e grafica
 
-Vehicles are `new | km0 | used` (`vehicle_kind`). The spec’s “auto usate” wording is superseded. Plate, stock, filters, and seed must cover all three kinds.
+Il prodotto pubblico è **Dealer CRM** (`dealercrm`). Non usare EtiDeal / etideal / etidealcrm in titoli, manifest, login o interfaccia. La grafica di riferimento è il commit `9d13424` (Quicksand + Baloo 2, crema caldo, teal). Lo schema Postgres resta `dealercrm`.
 
-## Schema isolation (2026-10-19)
+## 2026-10-20 — Schema unico `dealercrm`
 
-All dealer-management tables live in Postgres schema `etidealcrm` on project `moyfkdwsghidkcifesrg`. Schemas `public` and `etideal` are not dropped or altered. Storage buckets are in `storage` because the spec requires them.
+Lo schema `etidealcrm` e le sue 22 migrazioni sono stati sostituiti da `dealercrm`, scritto in due file (schema e dati demo). Il vecchio schema conteneva solo dati demo. I bucket dello Storage hanno il prefisso `dealercrm-` perché il progetto Supabase è condiviso con altre app.
 
-## Extra enums (2026-10-19)
+## Sicurezza
 
-The spec lists some columns as parenthetical unions. They are Postgres enums:
+- **Nessun accesso anonimo.** Tabelle, viste e funzioni sono revocate a `PUBLIC` e `anon`. La chiave pubblica nel browser non basta per leggere o scrivere nulla.
+- **Dispositivi.** Il vincolo è spento (2026-10-22): `device_ok()` / `is_device_authorized()` valgono per un profilo attivo. La tabella `device` resta. L'app non registra install, non mostra Dispositivi né la schermata di attesa, e non invia `x-device-id`.
+- **Ruoli.** Solo l'amministratore modifica i profili (ruolo compreso).
+- **Stati.** Un trigger blocca gli `UPDATE` di `status` su lead, veicoli e pratiche fuori dalle funzioni dedicate; una pratica nuova parte sempre da `open`.
+- **Webhook.** `lead-inbound` e `ai-result` richiedono la firma HMAC; `fic-webhook` richiede la chiave pubblica di Fatture in Cloud. Senza segreto rifiutano tutto.
 
-- `vehicle_work_kind`: bodywork, mechanical, cleaning, documents
-- `vehicle_work_status`: planned, in_progress, done
-- `purchase_type`: cash, financing, trade_in
-- `urgency`: low, medium, high
-- `actor_kind`: user, system, ai
-- `message_direction`: in, out
-- `deal_item_kind`: revenue, cost
-- `conclusion_type`: on_premises, distance, off_premises
-- `import_kind`: vehicles, leads, customers, suppliers
-- `import_job_status`: pending, preview, importing, done, failed
-- `import_row_status`: pending, valid, skipped, duplicate, error
-- `lost_reason`: the eight reasons from spec §5
+## Timer delle lead
 
-## Device binding off (2026-10-22)
+- I timer sotto le 24 ore (nuova, qualificata, assegnata, IA al telefono) contano solo l'orario di lavoro di `setting.lead_timers.work_hours`; quelli lunghi (contattata 2 giorni, proposta 3 giorni, trattativa 7 giorni) contano i giorni di calendario. Contare 2.880 minuti lavorativi avrebbe trasformato "2 giorni" in quasi una settimana.
+- Lead assegnata e non presa in carico: avviso al venditore (15'), avviso al responsabile (30'), riassegnazione (60'). Il livello raggiunto è in `lead.escalation_level`, così ogni avviso parte una volta sola. La riassegnazione esclude il venditore precedente e fa ripartire il timer. Oltre `max_reassignments` la lead va al responsabile vendite.
+- Negli altri stati alla scadenza parte un promemoria, poi il timer si ferma finché lo stato non cambia.
+- IA che non conclude in tempo: la lead passa a "qualificata" e si assegna (passaggio a una persona).
+- Persa in automatico dopo `auto_lose_days` senza cambi di stato né contatti.
 
-Paolo: authorized devices are not needed today. Binding stays off until Paolo turns it back on. Keep the `device` table and enum. Do not drop `device`.
+## Lead in ingresso
 
-- Repo schema name remains `etidealcrm`. `is_device_authorized()` is `is_active_user()` only.
-- Live project `moyfkdwsghidkcifesrg` currently stores dealer data in `dealercrm` (`drop_etidealcrm` 2026-10-20). There, `my_role()` / `my_dealership()` call `device_ok()`. `device_ok()` now returns true for an active profile. `dealercrm.is_device_authorized()` is the same alias.
-- App: no login gate, no pending screen, no Dispositivi nav or route, no client install-id header. `/dispositivi` falls through to Oggi.
+- Il cliente si riconosce dal telefono normalizzato (E.164, +39 se manca il prefisso) o dall'e-mail.
+- Interruttori IA per canale: telefono e segreteria → `voice`; WhatsApp, portali e sito → `whatsapp`; Facebook e Instagram → `social`; in sede nessuna IA. Con l'interruttore spento la lead resta "nuova" ed è assegnata al responsabile vendite con una notifica.
+- Finché `FEATURE_MESSAGING_REAL` è spento, `MockAiQualifier` dà un punteggio con regole semplici e la lead arriva da sola fino ad "assegnata".
 
-Turn the check back on with a new migration when Paolo asks.
+## Pratiche
 
-## Admin bootstrap for devices (2026-10-19)
+- `set_deal_status()` permette solo passi in avanti nella sequenza della specifica, più l'annullamento (non da consegnata o chiusa). Non si supera "firmata" senza firmare.
+- Annullando una pratica, l'auto riservata o venduta torna "pubblicata" se ha annunci attivi, altrimenti "pronta".
+- Consegnata la pratica, l'auto passa a "consegnata".
+- Alla firma si congelano gli importi stimati in una riga `contract` (senza documento); `generate-contract` la completa.
+- Demo: la pratica P-001 ha una caparra, quindi la regola della sezione 6 riserva la Mercedes GLC (nella tabella dei veicoli demo risultava "pubblicata").
 
-Superseded 2026-10-22: device approval is off. Previously an `admin` could open Dispositivi while pending so the first install could be approved.
+## Contratto e fatture
 
-## Device RLS (2026-10-19)
+- Il contratto è per ora una bozza HTML stampabile con i dati principali, nel bucket `dealercrm-documents`; il PDF e il modello definitivo arrivano con la fase 4.
+- La fattura si invia direttamente da `fic-invoice` (dal pulsante o alla consegna): l'outbox resta per i soli portali. In modalità prova, o con parametri mancanti, si verificano solo i totali.
 
-Superseded 2026-10-22. Helpers still call `is_device_authorized()`, which now only requires an active profile.
+## Piazzale su Google Maps (fase 5)
 
-## Cost columns (2026-10-19)
+- **Map ID.** Si usa `VITE_GOOGLE_MAPS_MAP_ID`, poi `setting.maps.map_id`, altrimenti `DEMO_MAP_ID` (quello di prova di Google, segnalato a schermo). Così la mappa funziona appena c'è la chiave; il Map ID vero si crea in Cloud Console quando si va in produzione.
+- **Disegno degli stalli.** Invece del tocco lungo, un pulsante "Disegna stalli" (ruoli piazzale e admin): in quella modalità un tocco aggiunge uno stallo e i segnaposto si trascinano. Sul telefono il tocco lungo si confonde con lo spostamento della mappa.
+- **Zona del nuovo stallo.** Quella dello stallo più vicino, oppure quella scelta a schermo; codice progressivo nella zona (`A-21`).
+- **Stallo occupato.** Non si mette un'auto in uno stallo già occupato da un'altra: prima si sposta quella.
+- **Tocco lontano dagli stalli.** Oltre `snap_radius_m` il piazzale o l'admin possono creare lì uno stallo nuovo e metterci l'auto; gli altri ruoli devono toccare uno stallo.
+- **"Sono qui".** Con accuratezza peggiore di 20 m si mostra l'avviso e si chiede di toccare la mappa; altrimenti vale come tocco.
+- **Aggiornamento tra telefoni.** Dopo ogni modifica l'app manda un avviso sul canale Realtime `dealercrm-yard` (senza dati) e gli altri telefoni rileggono dal database, quindi con la RLS e il controllo del dispositivo; in più rilettura ogni 30 secondi. Le notifiche Realtime sulle tabelle non portano l'header `x-device-id` e la RLS le bloccherebbe.
+- **Sede.** L'admin salva come sede il centro attuale della mappa; senza sede la mappa si centra sugli stalli.
 
-`purchase_cost` is on `vehicle`. `reconditioning_cost` is computed in `vehicle_stock`. Roles that must not see costs (`salesperson`, `reconditioning`, `yard`, `marketing`) cannot SELECT `vehicle`; they use `vehicle_public`. Yard position updates go through `set_vehicle_yard_position()`.
+## Backoffice
 
-## Assign lead (2026-10-19)
+- **Un solo sistema.** Telefono e computer usano la stessa app: su schermi larghi sidebar a sezioni, ricerca globale e tabelle; sul telefono barra in basso ed elenchi.
+- **Lead inserita a mano.** Il venditore la crea già "contattata" e assegnata a sé (cliente in salone o al telefono). Il responsabile la crea "qualificata" e la assegna a un venditore o con l'assegnazione automatica, così parte il timer di presa in carico.
+- **Cliente.** Si riconosce dal telefono (E.164) o dall'e-mail anche quando si inserisce a mano; i dati per contratto e fattura elettronica sono nella scheda cliente.
+- **Annunci.** Le azioni passano da `queue_listing_action` e dall'outbox; pubblicare un'auto "pronta" la porta a "pubblicata". Si pubblicano solo auto pronte, pubblicate o riservate.
 
-`assign_lead()` uses `setting.assignment_weights`, `assignment_params`, `value_bands`, `profile.enabled_bands`, continuity, median close-rate for band C, top-N for band D, min share 8%, max hot share 25%. Reason is stored in `assignment_reason`.
+## Veicoli (fase 2)
 
-## Lead timers (2026-10-19)
-
-`change_lead_status` sets `status_deadline_at` as wall-clock minutes from `setting.lead_timers`. `process_lead_timers()` escalates assigned leads at 15/30/60 minutes, auto-assigns qualified, auto-loses after 30 days. Working-hours arithmetic is still wall-clock plus the `work_hours` JSON in settings (not yet skipping nights). `pg_cron` is scheduled when the extension exists.
-
-## Shared Auth / demo users (2026-10-19)
-
-Auth is shared with other products on this Supabase project. Demo accounts use `*@demo.test` only. Paolo’s admin is not created. Password default `Demo!2026crm` (override with `DEMO_PASSWORD` / `app.demo_password`). `auth.identities.email` is generated: inserts omit that column.
-
-## Demo vehicles (2026-10-19)
-
-Spec §9 table has no `new` plate. ZZ104AA (Mercedes GLC) is `km0`; the others are `used`.
-
-## Plate format (2026-10-19)
-
-Plates are normalized to uppercase without spaces and must match `^[A-Z]{2}[0-9]{3}[A-Z]{2}$`.
-
-## Storage buckets (2026-10-19)
-
-Private buckets: `vehicle-photos`, `documents`, `imports`, `call-audio`. Policies still call `is_device_authorized()`, which currently means an active user.
-
-## Feature flags (2026-10-19)
-
-`FEATURE_PORTALS_REAL` and `FEATURE_MESSAGING_REAL` default false. No paid connectors are enabled. Outbox worker marks pending rows sent and withdraws listings (mock).
-
-## Contract PDF (2026-10-19)
-
-Edge Function `generate-contract` writes HTML into `documents` if Deno PDF libs are unavailable. The browser can also print from the Pratica screen. Template file is `templates/contratto-vendita.md`.
+- **Foto.** Si riducono sul telefono (lato lungo 1600 px, JPEG) e si caricano con un link firmato chiesto a `vehicle-media`, che controlla utente, ruolo e dispositivo; si mostrano con link firmati di un'ora. Così non dipendiamo dal passaggio dell'header `x-device-id` allo Storage. Senza rete restano in una coda nel telefono (IndexedDB) e partono al ritorno della connessione o alla prossima apertura dell'app.
+- **Check.** A passi: fase e cruscotto, chiavi/documenti/spie, pneumatici, danni, foto, riepilogo. Le 10 foto obbligatorie valgono per ingresso e consegna; durante la lavorazione sono facoltative. Ogni danno nuovo ha la sua foto. I danni ancora aperti del check precedente si ripropongono per segnare le riparazioni.
+- **Confronto.** Con il check precedente (non per fase), sugli stessi criteri di `compare_conditions`: danni nuovi, riparati, carburante, km oltre 50.
+- **IA sulle foto.** `vision` usa Claude (`claude-opus-5-5`, risposta JSON a schema fisso, ripiego automatico su un altro modello se la richiesta viene rifiutata). Legge il cruscotto come proposta da controllare e confronta le foto di due check; il risultato si salva in `vehicle_condition.ai_review`. Senza chiave si usa un confronto di prova sui dati inseriti.
+- **Lavorazioni.** Il ricondizionamento le inserisce e le chiude con `save_vehicle_work` e può indicare il costo, ma non lo rilegge: legge dalla vista `vehicle_work_list`, che mostra il costo solo ai ruoli dei costi.
+- **Allerte.** Calcolate al momento dalla vista `vehicle_alert` con le soglie di `setting.vehicle_alerts`; per "in arrivo oltre la data" c'è il nuovo campo `vehicle.expected_arrival`.

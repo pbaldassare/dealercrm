@@ -1,90 +1,45 @@
-import { useState, type FormEvent } from 'react'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { supabase, supabaseConfigured } from '../../lib/supabase'
+import { useState, type FormEvent } from "react";
+import { Navigate } from "react-router-dom";
+import { Car } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
+import { supabaseConfigured } from "@/lib/supabase";
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [pending, setPending] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const { session, signIn } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault()
-    setError(null)
-    setMessage(null)
+  if (session) return <Navigate to="/" replace />;
 
-    if (!supabaseConfigured) {
-      setError('Collegamento a Supabase non configurato. Imposta VITE_SUPABASE_ANON_KEY.')
-      return
-    }
-
-    setPending(true)
-    const { data, error: signError } = await supabase.auth.signInWithPassword({ email, password })
-    setPending(false)
-
-    if (signError) {
-      setError(
-        signError.message === 'Invalid login credentials'
-          ? 'E-mail o password non corretti.'
-          : 'Accesso non riuscito. Riprova.',
-      )
-      return
-    }
-
-    setMessage(
-      data.session
-        ? 'Accesso riuscito.'
-        : 'Controlla la posta per confermare l’accesso.',
-    )
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true); setError(null);
+    const err = await signIn(email.trim(), password);
+    setBusy(false);
+    if (err) setError(err);
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col justify-center px-5 py-8">
-      <p className="text-sm font-medium uppercase tracking-[0.16em] text-[#c45c26]">EtiDeal</p>
-      <h1 className="mt-2 text-3xl font-semibold leading-tight">Gestionale concessionario</h1>
-      <p className="mt-2 text-[15px] text-[#5c6578]">
-        Auto nuove, km0 e usate. Accedi con e-mail e password. Il secondo fattore si attiva
-        dall’account quando è disponibile. Demo: admin.demo@demo.test (password in docs/ENV.md).
-      </p>
-
-      {!supabaseConfigured && (
-        <p className="mt-4 rounded-xl bg-[#fde8d8] px-3 py-2 text-sm">
-          Anteprima senza chiavi: la schermata di accesso è visibile, ma il login resta disattivato
-          finché non imposti le variabili in <code>.env.local</code>.
-        </p>
-      )}
-
-      <form className="mt-8 space-y-4" onSubmit={onSubmit}>
-        <label className="block text-sm font-medium">
-          E-mail
-          <Input
-            className="mt-1"
-            type="email"
-            autoComplete="username"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        <label className="block text-sm font-medium">
-          Password
-          <Input
-            className="mt-1"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        {error && <p className="text-sm text-[#9b1c1c]">{error}</p>}
-        {message && <p className="text-sm text-[#1f7a4d]">{message}</p>}
-        <Button type="submit" disabled={pending}>
-          {pending ? 'Accesso…' : 'Accedi'}
-        </Button>
-      </form>
-    </main>
-  )
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-10">
+      <div className="card w-full max-w-sm p-6">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-primary text-white shadow-glow"><Car className="h-6 w-6" /></div>
+          <div><h1 className="text-2xl">Dealer CRM</h1><p className="text-sm text-muted-foreground">Accesso riservato al personale</p></div>
+        </div>
+        {!supabaseConfigured && (
+          <p className="mb-4 rounded-xl bg-warning/15 p-3 text-sm text-warning-ink">Manca la configurazione: copia <code>.env.example</code> in <code>.env</code> e inserisci la chiave di Supabase.</p>
+        )}
+        <form onSubmit={submit} className="space-y-4">
+          <div><Label htmlFor="email">E-mail</Label><Input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+          <div><Label htmlFor="password">Password</Label><Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></div>
+          {error && <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive-ink">{error}</p>}
+          <Button type="submit" className="w-full" disabled={busy}>{busy ? "Accesso in corso…" : "Entra"}</Button>
+        </form>
+      </div>
+    </div>
+  );
 }

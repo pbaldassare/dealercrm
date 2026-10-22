@@ -1,44 +1,38 @@
-import path from 'node:path'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import { defineConfig } from 'vitest/config'
-import { VitePWA } from 'vite-plugin-pwa'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
+import path from "node:path";
+
+const base = process.env.VITE_BASE ?? "/";
 
 export default defineConfig({
+  base,
   plugins: [
     react(),
-    tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
-      workbox: { cleanupOutdatedCaches: true },
-      includeAssets: ['favicon.svg', 'apple-touch-icon.svg'],
+      registerType: "autoUpdate",
+      includeAssets: ["icon.svg"],
       manifest: {
-        name: 'EtiDeal gestionale',
-        short_name: 'EtiDeal',
-        description: 'Gestionale concessionario: auto nuove, km0 e usate',
-        theme_color: '#14213d',
-        background_color: '#f8f4ef',
-        display: 'standalone',
-        start_url: '/',
-        lang: 'it',
+        name: "Dealer CRM",
+        short_name: "Dealer CRM",
+        description: "Gestionale del concessionario",
+        lang: "it",
+        theme_color: "#1a8099",
+        background_color: "#f2efe6",
+        display: "standalone",
+        start_url: base,
+        scope: base,
         icons: [
-          { src: '/pwa-192.svg', sizes: '192x192', type: 'image/svg+xml' },
-          { src: '/pwa-512.svg', sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+          { src: "icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any maskable" },
         ],
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        // Le ultime schermate restano disponibili senza rete; i dati passano sempre da Supabase.
+        navigateFallback: base + "index.html",
+        globPatterns: ["**/*.{js,css,html,svg,woff2}"],
       },
     }),
   ],
-  resolve: {
-        alias: {
-      '@': path.resolve(import.meta.dirname, 'src'),
-    },
-  },
-  server: {
-    host: true,
-    port: 43123,
-    strictPort: true,
-  },
-  test: {
-    environment: 'jsdom',
-  },
-})
+  resolve: { alias: { "@": path.resolve(__dirname, "src") } },
+});
