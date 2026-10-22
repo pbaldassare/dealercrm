@@ -1,10 +1,11 @@
-// Outbox dei portali con adattatori finti (di norma la esegue pg_cron ogni minuto): solo chiamate di sistema.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
-import { admin, handle, json, requireService } from '../_shared/common.ts'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
-Deno.serve(handle(async (req) => {
-  requireService(req)
-  const { data, error } = await admin().rpc('process_outbox')
-  if (error) throw error
-  return json({ sent: data, mock: true })
-}))
+Deno.serve(async () => {
+  const url = Deno.env.get('SUPABASE_URL') ?? ''
+  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  const supabase = createClient(url, key, { db: { schema: 'etidealcrm' } })
+  const { data, error } = await supabase.rpc('process_outbox')
+  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+  return new Response(JSON.stringify({ sent: data, mock: true }), { headers: { 'Content-Type': 'application/json' } })
+})

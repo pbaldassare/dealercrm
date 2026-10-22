@@ -1,34 +1,20 @@
-import { forwardRef, type ButtonHTMLAttributes } from "react";
-import { cn } from "@/lib/utils";
+import type { ButtonHTMLAttributes } from 'react'
+import { cn } from '../../lib/cn'
 
-type Variant = "primary" | "outline" | "ghost" | "destructive";
-type Size = "sm" | "md" | "icon";
-
-const variants: Record<Variant, string> = {
-  primary: "bg-primary text-primary-foreground shadow-glow hover:brightness-105",
-  outline: "border border-input bg-card hover:bg-secondary",
-  ghost: "text-primary hover:bg-secondary",
-  destructive: "bg-destructive text-destructive-foreground",
-};
-const sizes: Record<Size, string> = {
-  sm: "min-h-9 px-3.5 text-sm",
-  md: "min-h-11 px-5 text-sm",
-  icon: "h-11 w-11 p-0",
-};
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
-  size?: Size;
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: 'primary' | 'ghost'
 }
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant = "primary", size = "md", ...props }, ref) => (
-  <button
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-200 active:scale-[.97] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-      variants[variant], sizes[size], className,
-    )}
-    {...props}
-  />
-));
-Button.displayName = "Button";
+export function Button({ className, variant = 'primary', ...props }: Props) {
+  return (
+    <button
+      className={cn(
+        'inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 text-base font-semibold transition disabled:opacity-50',
+        variant === 'primary' && 'bg-[#c45c26] text-white hover:bg-[#a64b1e]',
+        variant === 'ghost' && 'bg-transparent text-[#14213d] underline-offset-4 hover:underline',
+        className,
+      )}
+      {...props}
+    />
+  )
+}

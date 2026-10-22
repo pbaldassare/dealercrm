@@ -1,0 +1,5 @@
+-- Spec §9 demo seed. Applied on the live project via
+-- supabase/migrations/20261019154100_etidealcrm_demo_seed.sql
+-- Auth identities.email is generated: do not insert that column.
+-- Users are *@demo.test only (shared Auth isolation). Password Demo!2026crm unless DEMO_PASSWORD.
+-- Paolo's admin account is not created here.

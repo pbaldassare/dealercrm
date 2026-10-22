@@ -1,18 +1,14 @@
-import { forwardRef, type InputHTMLAttributes } from "react";
-import { cn } from "@/lib/utils";
+import type { InputHTMLAttributes } from 'react'
+import { cn } from '../../lib/cn'
 
-export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => (
-  <input
-    ref={ref}
-    className={cn(
-      "h-11 w-full rounded-xl border border-input bg-card px-3.5 text-base outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/25",
-      className,
-    )}
-    {...props}
-  />
-));
-Input.displayName = "Input";
-
-export function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
-  return <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold">{children}</label>;
+export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      className={cn(
+        'min-h-11 w-full rounded-xl border border-[#d9d1c7] bg-white px-3 text-base text-[#14213d] outline-none focus:border-[#c45c26]',
+        className,
+      )}
+      {...props}
+    />
+  )
 }
